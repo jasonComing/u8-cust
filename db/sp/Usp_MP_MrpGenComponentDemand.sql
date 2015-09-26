@@ -1,15 +1,9 @@
-USE [UFDATA_003_2015]
-GO
-
-/****** Object:  StoredProcedure [dbo].[Usp_MP_MrpGenComponentDemand]    Script Date: 2015-09-26 10:20:29 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER OFF
-GO
+if exists (select * from sysobjects where id = object_id('dbo.Usp_MP_MrpGenComponentDemand') )
+        drop procedure dbo.Usp_MP_MrpGenComponentDemand
+go
 
 /******展开BOM，获得子件需求********/
-create procedure [dbo].[Usp_MP_MrpGenComponentDemand]
+ALTER procedure [dbo].[Usp_MP_MrpGenComponentDemand]
 		 @v_llc int,
 		 @v_Plan tinyint = 0, /**0-全部 1-MPS/MRP, 2-SRP,3－BRP****/
 		 @v_ProjectId int = 0,
@@ -165,10 +159,20 @@ as
 			 case when c1.MergeType  = 3 then DemandCode else s.SoCode end,
 			 case when c1.MergeType = 2 then s.SoSeq else null end,*/
 			 s.SoType,s.SoDId,s.SoCode,s.SoSeq,s.RefDId,s.RefCode,isnull(s.SupplyingRCode,s.RefCode),
-          round((case when b.FVFlag = 1 then convert(float,s.Qty) * b.BaseQtyN / b.BaseQtyD * b.Scrap * b.PlanFactor / 100 else b.BaseQtyN / b.BaseQtyD * b.Scrap end),@l_scale),
+          round((case when b.FVFlag = 1 then convert(float,s.Qty) * b.BaseQtyN / b.BaseQtyD * (case when s1.OpComponentId IS NOT NULL THEN  1.0+s1.CompScrap/100 else b.Scrap end) * b.PlanFactor / 100 else b.BaseQtyN / b.BaseQtyD * (case when s1.OpComponentId IS NOT NULL THEN  1.0+s1.CompScrap/100 else b.Scrap end) end),@l_scale),
           		b.Offset,case when c1.IsRem = 1 or c.IsRem = 1 then 1 else 0 end ,case when b.ByproductFlag = 0 then s.LUSD else s.LUCD end,b.ByproductFlag,b.FVFlag,
 			 case when c1.SupplyType < 3 or c1.IsRem = 1 then 0 else b.DPFlag end,b.OpComponentId,
 			 s.DemandCode
+     from #mps_supply s
+     inner join mps_bomtemp b on s.PartId = b.ParentId and s.OrderBomFlag = b.OrderBomFlag and (s.SoType = b.SoType and s.SoDId = b.SoDId and b.OrderBomFlag = 1 or b.OrderBomFlag = 0 and b.SoType = 0 and b.SoDId = '') and
+          s.StartDate >= b.StartDate and s.StartDate < b.EndDate and
+			 s.StartDate >= b.EffBegDate and s.StartDate < b.EffEndDate
+     inner join mps_currentstock c on s.PartId = c.PartId and c.ProjectId in (@l_mpsprojid, @l_mrpprojid) 
+     inner join mps_temppart c1 on b.ComponentId = c1.PartId
+     left join bom_opcomponentscrap s1 on b.OpComponentId=s1.OpComponentId and s.Qty >s1.FromQty and s.Qty<=s1.ToQty
+    where s.SupplyType > 1  and (c.ATO = 0 or s.SoType in (2,0))  
+/*fisher modified
+
      from #mps_supply s, mps_bomtemp b, mps_currentstock c, mps_temppart c1
     where s.SupplyType > 1 and s.PartId = b.ParentId and s.OrderBomFlag = b.OrderBomFlag and (s.SoType = b.SoType and s.SoDId = b.SoDId and b.OrderBomFlag = 1 or b.OrderBomFlag = 0 and b.SoType = 0 and b.SoDId = '') and
           s.StartDate >= b.StartDate and s.StartDate < b.EndDate and
@@ -176,6 +180,8 @@ as
           s.PartId = c.PartId and 
        	(c.ATO = 0 or s.SoType in (2,0)) and 
 			b.ComponentId = c1.PartId and c.ProjectId in (@l_mpsprojid, @l_mrpprojid)
+			
+*/			 
 
 	if @v_plan < 3
 	begin
@@ -399,9 +405,5 @@ as
 --     commit tran
 
 return 0  
-
-
-
-GO
 
 
