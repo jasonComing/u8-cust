@@ -4,6 +4,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+if exists (select * from sysobjects where id = object_id('dbo.p_SOprint') )
+        drop procedure dbo.p_SOprint
+go
+
 CREATE PROCEDURE [dbo].[p_SOprint]   --   exec p_SOprint 'JOB160200006'    exec p_SOprint 'J160200002'
 	@DocNo varchar(50)
 AS
@@ -48,6 +52,7 @@ BEGIN
 		declare @cInvName varchar(500)--存货名称
 		declare @iQuantity varchar(500)--数量
 		declare @BomStr varchar(8000)--BOM描述
+		declare @ResponsibleBy varchar(100)--負責人
 	end
 	if ''!='普通直填文字赋值与填写'
 	begin
@@ -64,6 +69,7 @@ BEGIN
 				,@CreateTime=convert(varchar(100),a.dDate,105)
 				,@id=a.ID
 				,@shoukuan=c.cName
+				,@ResponsibleBy=b.chdefine9
 		from SO_SOMain a left join SO_SOMain_extradefine b on a.ID=b.ID
 		left join AA_Agreement c on a.cgatheringplan=c.cCode
 		left join Customer d on a.cCusCode=d.cCusCode
@@ -81,6 +87,7 @@ BEGIN
 		insert into @t(Lei,X,Y,S) select 'T',2 ,3,@shoukuan --收款
 		insert into @t(Lei,X,Y,S) select 'T',4 ,2,@Cur --客户
 		insert into @t(Lei,X,Y,S) select 'T',7 ,2,@bq --辦期
+		insert into @t(Lei,X,Y,S) select 'T',11,3,@ResponsibleBy --負責人
 		insert into @t(Lei,X,Y,S) select 'T',11,2,@Date --开单日期
 		insert into @t(Lei,X,Y,S) select 'T',1,29,@Memo --备注
 		insert into @t(Lei,X,Y,S) select 'T',7,29,@bzMemo --包装备注
@@ -93,7 +100,10 @@ BEGIN
 		if ''!='缓存BOM资料'
 		begin
 			--第一层BOM
-			select left(f.cInvCode,3) as Class,f.cInvCode,f.cInvName,g.cInvCName,ff.cidefine3 as Lz,ff.cidefine13 as Ms,h.Picture
+			select left(f.cInvCode,3) as Class,f.cInvCode,f.cInvName,g.cInvCName,
+				-- change \n to line break
+				replace(ff.cidefine3, '\n', char(13)+char(10)) as Lz,
+				ff.cidefine13 as Ms,h.Picture
 			into #a
 			from bas_part a 
 			inner join bom_parent b on b.parentid=a.PartId and a.InvCode=@cInvCode--'D_NY2402'
@@ -103,7 +113,8 @@ BEGIN
 			inner join Inventory f on e.InvCode=f.cInvCode --and f.cInvCCode in('604','602','609','605','603','617')                  --and (f.cInvCode like '605%' or f.cInvCode like '609%') --and (f.cInvName like '%面%' or f.cInvName like '%底蓋%')
 			left join Inventory_extradefine ff on f.cInvCode=ff.cInvCode
 			left join InventoryClass g on f.cInvCCode=g.cInvCCode
-			left join AA_Picture h on f.PictureGUID=h.cGUID;
+			left join AA_Picture h on f.PictureGUID=h.cGUID
+			where c.CloseDate is null;
 			--第二层BOM
 			select aa.cInvCode as PcInvCode,aa.cInvName as PcInvName,f.cInvCode,f.cInvName,g.cInvCName
 			into #b
@@ -113,13 +124,14 @@ BEGIN
 			inner join Bom_opcomponent d on d.BomId=c.BomId
 			inner join bas_part e on d.ComponentId=e.PartID
 			inner join Inventory f on e.InvCode=f.cInvCode
-			left join InventoryClass g on f.cInvCCode=g.cInvCCode;
+			left join InventoryClass g on f.cInvCCode=g.cInvCCode
+			where c.CloseDate is null;
 		end
 		if ''!='层级BOM字符串组装与填写'
 		begin
-			set @BomStr='第一层'+dbo.f_hr()+@cInvCode--'D_AX2100'--
+			set @BomStr='第一層'+dbo.f_hr()+@cInvCode--'D_AX2100'--
 			select @BomStr=@BomStr+dbo.f_hr()+cInvCode+'  '+cInvName from #a where cInvCode not like 'P_%'
-			set @BomStr=@BomStr+dbo.f_hr()+'第二层'
+			set @BomStr=@BomStr+dbo.f_hr()+'第二層'
 			set @i=1
 			select row_number() over(order by PcInvCode) as i,PcInvCode,PcInvName into #c from (select distinct PcInvCode,PcInvName from #b) aa
 			while exists(select top 1 1 from #c where i=@i)
