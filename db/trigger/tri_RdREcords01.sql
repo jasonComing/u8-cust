@@ -1,4 +1,4 @@
-USE [UFDATA_003_2015]
+USE [UFDATA_004_2015]
 GO
 
 SET ANSI_NULLS ON
@@ -29,7 +29,8 @@ BEGIN
 	
 	-- Update 入庫餘數 in 採購入庫單
 	update e
-	set e.cbdefine6 = a.iQuantity - d.iQuantity - a.fSumRefuseQuantity
+	-- 到貨數量 - 入庫數量 - 測試數量 - 總拒收數量 
+	set e.cbdefine6 = isnull(a.iQuantity,0) - isnull(d.iQuantity,0) - isnull(e.cbdefine7,0) - isnull(a.fSumRefuseQuantity,0)
 	from rdrecords01_extradefine e
 	join RdRecords01 d on d.AutoId = e.AutoId
 	join PU_ArrivalVouchs a on a.AutoId = d.iArrsId
