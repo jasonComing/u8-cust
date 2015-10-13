@@ -63,9 +63,9 @@ BEGIN
 				,@Cur=d.cCusAbbName--a.cCusName
 				,@bq=a.cDefine13--'辦期文字待定'
 				,@Date=convert(varchar(100),a.dDate,23) 
-				,@Edit=b.chdefine3
-				,@Memo=a.cMemo
-				,@bzMemo=b.chdefine2--'包装备注文字待定'
+				,@Edit=replace(b.chdefine3, '\n', char(13)+char(10))
+				,@Memo=replace(a.cMemo, '\n', char(13)+char(10))
+				,@bzMemo=replace(b.chdefine2, '\n', char(13)+char(10))--'包装备注文字待定'
 				,@CreateTime=convert(varchar(100),a.dDate,105)
 				,@id=a.ID
 				,@shoukuan=c.cName
@@ -175,9 +175,12 @@ BEGIN
 							  +isnull(Ms,'') 
 			from #d a inner join Inventory_extradefine b on a.cInvCode=b.cInvCode and a.cInvCode like '609%'
 
-			insert into #d(OrderByNo,cInvCode,cInvCName,cInvName,Lz,Ms) select @rowNo,@cInvCode,'产成品',@cInvName,cidefine3
+			insert into #d(OrderByNo,cInvCode,cInvCName,cInvName,Lz,Ms) select @rowNo,@cInvCode,c.cInvCName,@cInvName,cidefine3
 				,'防水:'+isnull(b.cidefine2,'')+',Grade:'+isnull(b.cidefine1,'')+','+isnull(cidefine13,'')
-			from Inventory a left join Inventory_extradefine b on a.cInvCode=b.cInvCode where a.cInvCode=@cInvCode
+			from Inventory a 
+			join InventoryClass c on c.cInvCCode = a.cInvCCode
+			left join Inventory_extradefine b on a.cInvCode=b.cInvCode 
+			where a.cInvCode=@cInvCode
 
 			--select * from #d order by OrderByNo   --   exec p_SOprint 'JOB160200006'
 
