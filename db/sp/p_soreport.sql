@@ -4,11 +4,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-if exists (select * from sysobjects where id = object_id('dbo.p_SOprint') )
-        drop procedure dbo.p_SOprint
-go
 
-CREATE PROCEDURE [dbo].[p_SOprint]   --   exec p_SOprint 'JOB160200006'    exec p_SOprint 'J160200002'
+CREATE PROCEDURE [dbo].[p_SOprint]   --   exec p_SOprint 'J160400022'    exec p_SOprint 'J160200002'
 	@DocNo varchar(50)
 AS
 BEGIN
@@ -162,10 +159,11 @@ BEGIN
 		begin
 			--cInvCode,cInvName,cInvCName,Lz,Ms
 			set @rowNo=33
-			select @rowNo+ROW_NUMBER() OVER(order by case when Class='604' then 2 when Class='607' then 3 when Class='602' then 4 when Class='609' then 5 when Class='605' then 6 when Class='603' then 7 when Class='617' then 8 else 9 end) AS OrderByNo
+			select @rowNo+ROW_NUMBER() OVER(order by case when Class='601' then 3  when Class='607' then 4 when Class='605' then 7 when Class='603' then 8 when Class='617' then 8 when Class='602' then 9 when Class='619' then 9 when Class='622' then 10 when Class='604' then 11 when Class='609' then 12 else 13 end) AS OrderByNo
 				,cInvCode,cInvCName,cInvName,Lz,Ms
 			into #d
-			from #a where Class in('604','607','602','609','605','603','617')
+			from #a where Class in('604','607','602','609','605','603','617'  ,'601','622','619')--帶(622、619)，成品殼601
+			--殼601(607)、605、603、617、帶602(622、619)\604   產品成、殼、面、針、的、帶、機芯
 
 			update a set a.Ms= case when isnull(b.cidefine4,'')='' then '' else '物料:'+isnull(b.cidefine4,'')+dbo.f_hr() end
 							  +case when isnull(b.cidefine5,'')='' then '' else '光令:'+isnull(b.cidefine5,'')+dbo.f_hr() end
@@ -229,6 +227,7 @@ BEGIN
 	update @t set PicName='',W=0 where PicName is null
 	select * from @t
 END
+
 
 GO
 
