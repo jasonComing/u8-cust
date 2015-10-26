@@ -63,73 +63,19 @@ BEGIN
 
 	if ''='作废'
 	begin
-		----成品编码和士啤编码
-		--select @InvCode=min(c.cInvCode),@SPCode=min(c.cInvDefine1),@iQuantity=sum(iQuantity),@MinID=min(AutoID)
-		--from SO_SOMain a 
-		--inner join SO_SODetails b on a.ID=b.ID and a.cSOCode=@DocNo 
-		--inner join Inventory c on b.cInvCode=c.cInvCode
-		----抛错
-		--if isnull(@SPCode,'')=''
-		--begin
-		--	select '当前成品未设定士啤编码，请先于成品档案设定士啤编码'
-		--	return
-		--end;
-		--if not exists(select top 1 1 from t_SOSP where SPcode=@SPCode)
-		--begin
-		--	select '通过当前成品的士啤编码'+@SPCode+'未能查找到对应士啤方案,请核实'
-		--	return
-		--end;
-		----通过BOM和士啤方案组装行存货
-		--select f.cInvCode,f.cInvName,g.ClassType,g.Qty,g.Proportion,d.BaseQtyN,d.BaseQtyD,f.cComUnitCode     --,case when g.ClassType='数量' then g.Qty else @iQuantity*(d.BaseQtyN/d.BaseQtyD)*g.Proportion end as Qty,f.cComUnitCode
-		--into #b
-		--from bas_part a 
-		--inner join bom_parent b on b.parentid=a.PartId and a.InvCode=@InvCode
-		--inner join bom_bom c on b.BomId=c.BomId
-		--inner join Bom_opcomponent d on d.BomId=c.BomId
-		--inner join bas_part e on d.ComponentId=e.PartID
-		--inner join Inventory f on e.InvCode=f.cInvCode
-		--inner join t_SOSPs g on g.SOSP=@SPCode and g.Class=left(f.cInvCode,3)
-		----关联到订单行
-
-		----行数
-		--select @LineCount=count(*) from #b
-		----获取主子表开始ID
-		--exec sp_GetId N'00',@cAccID,N'Somain',@LineCount,@P1 output,@P2 output  
-		--set @P2=@P2-@LineCount
-		----编辑和插入主表
-		--update #SO_SOMain set ID=@P1,cSOCode=cSOCode+'_SP',iStatus=0,dverifysystime=null,icreditstate=null,dverifydate=null,iverifystate=0,cVerifier=null,cCloser=null,bReturnFlag=0,bOrder=0,cChanger=null,cCreChpName=null,cLocker=null
-		--insert into SO_SOMain select * from #SO_SOMain
-		----编辑和插入子表
-		--insert into SO_SODetails(cSOCode,cInvCode,dPreDate,iQuantity,iNum
-		--	,iQuotedPrice,iUnitPrice,iTaxUnitPrice,iMoney,iTax,iSum,iDisCount,iNatUnitPrice,iNatMoney,iNatTax,iNatSum,iNatDisCount,iFHNum,iFHQuantity,iFHMoney,iKPQuantity,iKPNum,iKPMoney,bFH
-		--	,iSOsID,KL,KL2,cInvName,iTaxRate--,iInvExchRate--转换率
-		--	,cUnitID--计量单位Code 需计算
-		--	,ID,FPurQuan,fSaleCost,fSalePrice,iQuoID,dPreMoDate,iRowNo
-		--	,iMoQuantity,iPreKeepQuantity,iPreKeepNum,iPreKeepTotQuantity,iPreKeepTotNum
-		--	--,dreleasedate释放日期 没有
-		--	,fcusminprice,fimquantity,fomquantity,ballpurchase,finquantity,foutquantity,foutnum,iexchsum,imoneysum
-		--	,fretquantity,fretnum,bOrderBOM,bOrderBOMOver,fPurSum,fPurBillQty,fPurBillSum,fVeriDispQty,fVeriDispSum,bgift
-		--	--,cbSysBarCode--单据行条码
-		--	)
-		--select @DocNo+'_SP',a.cInvCode,b.dPreDate,a.Qty,a.Qty
-		--	,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-		--	,@P2+ROW_NUMBER() OVER(order by a.cInvCode),100,100,a.cInvName,0--,1
-		--	,a.cComUnitCode--计量单位Code 需计算
-		--	,@P1,0,0,0,0,b.dPreMoDate,ROW_NUMBER() OVER(order by a.cInvCode)
-		--	,0,0,0,0,0
-		--	--,null
-		--	,0,0,0,0,0,0,0,0,0
-		--	,0,0,0,0,0,0,0,0,0,0
-		--	--,null--单据行条码
-		--from #b a inner join SO_SODetails b on b.AutoID=@MinID
-
 		return
 	end;
 
 	--通过BOM和士啤方案组装行存货
 	--select f.cInvCode,f.cInvName,g.ClassType,g.Qty,g.Proportion,d.BaseQtyN,d.BaseQtyD,f.cComUnitCode     --,case when g.ClassType='数量' then g.Qty else @iQuantity*(d.BaseQtyN/d.BaseQtyD)*g.Proportion end as Qty,f.cComUnitCode
 	select aa.AutoID,f.cInvCode,f.cInvName,g.ClassType,g.Qty,g.Proportion,d.BaseQtyN,d.BaseQtyD,f.cComUnitCode,aa.iSOsID as OldiSOsID,aa.iQuantity
-		,cast(case when g.ClassType='数量' then g.Qty else g.Proportion*aa.iQuantity*d.BaseQtyN/d.BaseQtyD end as int) as NewiQuantity
+		,convert(int, (case 
+			when g.ClassType='数量' then g.Qty
+			when g.ClassType='比例' and m.RoundingStyle = 'Floor' then floor(g.Proportion*aa.iQuantity*d.BaseQtyN/d.BaseQtyD)
+			when g.ClassType='比例' and m.RoundingStyle = 'Ceiling' then ceiling(g.Proportion*aa.iQuantity*d.BaseQtyN/d.BaseQtyD)
+			when g.ClassType='比例' and m.RoundingStyle = 'Regular' then round(g.Proportion*aa.iQuantity*d.BaseQtyN/d.BaseQtyD, 0)
+			else g.Proportion*aa.iQuantity*d.BaseQtyN/d.BaseQtyD
+			end)) as NewiQuantity
 	into #b
 	from bas_part a inner join #SO_SODetails aa on a.InvCode=aa.cInvCode inner join Inventory_extradefine aaa on a.InvCode=aaa.cInvCode
 	inner join bom_parent b on b.parentid=a.PartId
@@ -138,6 +84,7 @@ BEGIN
 	inner join bas_part e on d.ComponentId=e.PartID
 	inner join Inventory f on e.InvCode=f.cInvCode
 	inner join t_SOSPs g on g.SOSP=aaa.cidefine12 and g.Class=left(f.cInvCode,3)
+	inner join t_SOSP m on m.SOSP=g.SOSP
 
 	--行数
 	select @LineCount=count(*) from #b
