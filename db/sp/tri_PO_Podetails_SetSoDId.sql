@@ -9,8 +9,14 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-
-	update a set a.SoDId=b.cbdefine3,a.csocode=b.cbdefine3 from PO_Podetails a inner join Inserted b on a.ID=b.ID and isnull(a.SoDId,'')='' and isnull(b.cbdefine3,'')!=''
+	if UPDATE(cbdefine3)
+	BEGIN
+		update a set a.SoDId=b.cbdefine3,a.csocode=b.cbdefine3 
+		from PO_Podetails a 
+		inner join Inserted b on a.ID=b.ID 
+		and isnull(a.SoDId,'')='' 
+		and isnull(b.cbdefine3,'')!=''
+	END
 
 END
 GO

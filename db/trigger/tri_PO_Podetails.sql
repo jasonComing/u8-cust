@@ -1,6 +1,3 @@
-USE [UFDATA_003_2015]
-GO
-
 SET ANSI_NULLS ON
 GO
 
@@ -26,6 +23,15 @@ BEGIN
 	inner join v_CustSoInventoryMap m on b.SoDId = m.cSOCode
 	inner join Inventory e on m.cInvCode=e.cInvCode
 	left join Inventory_extradefine f on e.cInvCode=f.cInvCode
+	
+	update b set b.cbdefine11 = i.cInvDefine7
+	from PO_PODetails_extradefine b
+	inner join PO_PODetails d on d.ID = b.ID
+	inner join PO_POMain m on m.POId = d.POID
+	inner join v_CustSoInventoryMap s on s.cSOCode = d.csocode
+	inner join Inventory i on i.cInvCode = s.cInvCode
+	inner join Inserted bb on b.ID = bb.ID
+	
 END
 
 GO
