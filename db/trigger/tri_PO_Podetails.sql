@@ -24,14 +24,13 @@ BEGIN
 	inner join Inventory e on m.cInvCode=e.cInvCode
 	left join Inventory_extradefine f on e.cInvCode=f.cInvCode
 	
-	update b set b.cbdefine11 = i.cInvDefine7
+	-- 开发技术参数, 機蕊類型
+	update b set b.cbdefine11 = i.cInvDefine7, b.cbdefine12 = i.cInvDefine9
 	from PO_PODetails_extradefine b
 	inner join PO_PODetails d on d.ID = b.ID
-	inner join PO_POMain m on m.POId = d.POID
 	inner join v_CustSoInventoryMap s on s.cSOCode = d.csocode
 	inner join Inventory i on i.cInvCode = s.cInvCode
 	inner join Inserted bb on b.ID = bb.ID
-	
 END
 
 GO
