@@ -84,7 +84,7 @@ BEGIN
 	inner join bas_part e on d.ComponentId=e.PartID
 	inner join Inventory f on e.InvCode=f.cInvCode
 	inner join t_SOSPs g on g.SOSP=aaa.cidefine12 and g.Class=left(f.cInvCode,3)
-	inner join t_SOSP m on m.SOSP=g.SOSP
+	inner join t_SOSP m on m.SPcode=g.SOSP
 
 	--行数
 	select @LineCount=count(*) from #b
