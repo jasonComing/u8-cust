@@ -17,10 +17,11 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
+	-- 客號, 款號
 	update b set b.cDefine29=e.cInvDefine1,b.cDefine33=f.cidefine9
 	from PO_Podetails b
 	inner join Inserted bb on b.ID=bb.ID
-	inner join v_CustSoInventoryMap m on b.SoDId = m.cSOCode
+	inner join v_CustSoInventoryMap m on b.cSOCode = m.cSOCode
 	inner join Inventory e on m.cInvCode=e.cInvCode
 	left join Inventory_extradefine f on e.cInvCode=f.cInvCode
 	
