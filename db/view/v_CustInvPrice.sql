@@ -12,5 +12,6 @@ from SO_SOMain m
 join SO_SODetails d on d.id = m.id
 left join SO_SODetails_extradefine x on x.iSOsID = d.iSOsID
 left join SO_SOMain_extradefine dx on dx.ID = d.ID
-join Inventory i on i.cInvCode = d.cInvCode) t
+join Inventory i on i.cInvCode = d.cInvCode
+where m.csocode not like '%_SP') t
 group by SKU, Currency, JobNo, UnitPrice, MovementPrice, PackingPrice, PricingMemo
