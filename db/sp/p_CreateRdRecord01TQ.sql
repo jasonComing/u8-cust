@@ -5,7 +5,7 @@ WPI15100209
 -- Get into the warehouse  (No_TQ)
 -- Erase it
 
-CREATE PROCEDURE [dbo].[p_CreateRdRecord01TQ] 
+ALTER PROCEDURE [dbo].[p_CreateRdRecord01TQ] 
 	@cCode varchar(60) = null,
 	@debug int = 0
 AS
@@ -13,8 +13,8 @@ BEGIN
 
 declare @p5 int
 declare @p6 int
-declare @whilecount int
 declare @id int
+declare @autoid int
 declare @rowcount int
 
 -- temp table
@@ -66,40 +66,40 @@ begin
 	end
 	
 	-- now insert into rdrecord01
-	/*insert into rdrecord01(id,brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,ccode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount)*/
 	insert into #main
-	select @p5 as id, brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,cCode + '_TQ' as cCode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount
+	select @p5 as id, brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,cCode + '_TQ' as cCode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,'system',cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,getdate(),null, null,bredvouch,bcredit,iprintcount
 	from rdrecord01
 	where id = @id
 	
-	--insert into #NewRdRecords values (@p5)
-	
-	--Insert Into rdrecord01_ExtraDefine(id,chdefine3,chdefine11,chdefine13) Values (@p5,NULL,NULL,NULL)
-	
 	-- now insert into rdrecords
-	set @whilecount = @rowcount
+	select @rowcount = count(*) from #ProcessIds where id = @id
 	
-	while @whilecount > 0
+	declare autoid_cursor cursor for
+		select AutoId
+		from #ProcessIds
+		where id = @id
+	
+	open autoid_cursor
+	fetch next from autoid_cursor into @autoid
+
+	while @@FETCH_STATUS = 0 
 	begin
-	
-		if (@debug > 0)
-		begin
-			select 'autoid', @p6-@whilecount+1
-		end
-	
-		/*Insert Into rdrecords01(autoid,id,cinvcode,inum,iquantity,iunitcost,iprice,iaprice,ipunitcost,ipprice,cbatch,cvouchcode,cinvouchcode,cinvouchtype,isoutquantity,isoutnum,cfree1,cfree2,dsdate,itax,isquantity,isnum,imoney,ifnum,ifquantity,dvdate,cposition,cdefine22,cdefine23,cdefine24,cdefine25,cdefine26,cdefine27,citem_class,citemcode,iposid,facost,cname,citemcname,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10,cbarcode,inquantity,innum,cassunit,dmadedate,imassdate,cdefine28,cdefine29,cdefine30,cdefine31,cdefine32,cdefine33,cdefine34,cdefine35,cdefine36,cdefine37,icheckids,cbvencode,cgspstate,iarrsid,ccheckcode,icheckidbaks,crejectcode,irejectids,ccheckpersoncode,dcheckdate,ioritaxcost,ioricost,iorimoney,ioritaxprice,iorisum,itaxrate,itaxprice,isum,btaxcost,cpoid,cmassunit,imaterialfee,iprocesscost,iprocessfee,dmsdate,ismaterialfee,isprocessfee,iomodid,strcontractid,strcode,cbaccounter,dbkeepdate,bcosting,isumbillquantity,bvmiused,ivmisettlequantity,ivmisettlenum,cvmivencode,iinvsncount,impcost,iimosid,iimbsid,cbarvcode,dbarvdate,iinvexchrate,corufts,iexpiratdatecalcu,cexpirationdate,dexpirationdate,cciqbookcode,ibondedsumqty,iordertype,iorderdid,iordercode,iorderseq,isodid,isotype,csocode,isoseq,cbatchproperty1,cbatchproperty2,cbatchproperty3,cbatchproperty4,cbatchproperty5,cbatchproperty6,cbatchproperty7,cbatchproperty8,cbatchproperty9,cbatchproperty10,cbmemo,ifaqty,istax,irowno,strowguid,idebitids,ioldpartid,foldquantity,cbsysbarcode,bmergecheck,imergecheckautoid,creworkmocode,ireworkmodetailsid,iproducttype,cmaininvcode,imainmodetailsid,isharematerialfee,cplanlotcode,bgift,iposflag)*/
 		insert into #detail
-		select @p6-@whilecount+1, @p5,cinvcode,inum,e.cbdefine7,iunitcost,iprice,iaprice,ipunitcost,ipprice,cbatch,cvouchcode,cinvouchcode,cinvouchtype,isoutquantity,isoutnum,cfree1,cfree2,dsdate,itax,isquantity,isnum,imoney,ifnum,ifquantity,dvdate,cposition,cdefine22,cdefine23,cdefine24,cdefine25,cdefine26,cdefine27,citem_class,citemcode,iposid,facost,cname,citemcname,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10,cbarcode,inquantity,innum,cassunit,dmadedate,imassdate,cdefine28,cdefine29,cdefine30,cdefine31,cdefine32,cdefine33,cdefine34,cdefine35,cdefine36,cdefine37,icheckids,cbvencode,cgspstate,iarrsid,ccheckcode,icheckidbaks,crejectcode,irejectids,ccheckpersoncode,dcheckdate,ioritaxcost,ioricost,iorimoney,ioritaxprice,iorisum,itaxrate,itaxprice,isum,btaxcost,cpoid,cmassunit,imaterialfee,iprocesscost,iprocessfee,dmsdate,ismaterialfee,isprocessfee,iomodid,strcontractid,strcode,cbaccounter,dbkeepdate,bcosting,isumbillquantity,bvmiused,ivmisettlequantity,ivmisettlenum,cvmivencode,iinvsncount,impcost,iimosid,iimbsid,cbarvcode,dbarvdate,iinvexchrate,corufts,iexpiratdatecalcu,cexpirationdate,dexpirationdate,cciqbookcode,ibondedsumqty,iordertype,iorderdid,iordercode,iorderseq,isodid,isotype,csocode,isoseq,cbatchproperty1,cbatchproperty2,cbatchproperty3,cbatchproperty4,cbatchproperty5,cbatchproperty6,cbatchproperty7,cbatchproperty8,cbatchproperty9,cbatchproperty10,cbmemo,ifaqty,istax,irowno,strowguid,idebitids,ioldpartid,foldquantity,cbsysbarcode,bmergecheck,imergecheckautoid,creworkmocode,ireworkmodetailsid,iproducttype,cmaininvcode,imainmodetailsid,isharematerialfee,cplanlotcode,bgift,iposflag
+		select @p6-@rowcount+1, @p5,cinvcode,inum,e.cbdefine7,iunitcost,iprice,iaprice,ipunitcost,ipprice,cbatch,cvouchcode,cinvouchcode,cinvouchtype,isoutquantity,isoutnum,cfree1,cfree2,dsdate,itax,isquantity,isnum,imoney,ifnum,ifquantity,dvdate,cposition,cdefine22,cdefine23,cdefine24,cdefine25,cdefine26,cdefine27,citem_class,citemcode,iposid,facost,cname,citemcname,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10,cbarcode,inquantity,innum,cassunit,dmadedate,imassdate,cdefine28,cdefine29,cdefine30,cdefine31,cdefine32,cdefine33,cdefine34,cdefine35,cdefine36,cdefine37,icheckids,cbvencode,cgspstate,iarrsid,ccheckcode,icheckidbaks,crejectcode,irejectids,ccheckpersoncode,dcheckdate,ioritaxcost,ioricost,iorimoney,ioritaxprice,iorisum,itaxrate,itaxprice,isum,btaxcost,cpoid,cmassunit,imaterialfee,iprocesscost,iprocessfee,dmsdate,ismaterialfee,isprocessfee,iomodid,strcontractid,strcode,cbaccounter,dbkeepdate,bcosting,isumbillquantity,bvmiused,ivmisettlequantity,ivmisettlenum,cvmivencode,iinvsncount,impcost,iimosid,iimbsid,cbarvcode,dbarvdate,iinvexchrate,corufts,iexpiratdatecalcu,cexpirationdate,dexpirationdate,cciqbookcode,ibondedsumqty,iordertype,iorderdid,iordercode,iorderseq,isodid,isotype,csocode,isoseq,cbatchproperty1,cbatchproperty2,cbatchproperty3,cbatchproperty4,cbatchproperty5,cbatchproperty6,cbatchproperty7,cbatchproperty8,cbatchproperty9,cbatchproperty10,cbmemo,ifaqty,istax,irowno,strowguid,idebitids,ioldpartid,foldquantity,cbsysbarcode,bmergecheck,imergecheckautoid,creworkmocode,ireworkmodetailsid,iproducttype,cmaininvcode,imainmodetailsid,isharematerialfee,cplanlotcode,bgift,iposflag
 		from rdrecords01 d
 		join rdrecords01_extradefine e on e.autoid = d.autoid
-		join #ProcessIds i on i.autoid = e.autoid
-		where i.id = @id
+		and e.autoid = @autoid
 		
-		 --Insert Into rdrecords01_ExtraDefine(autoid,cbdefine3,cbdefine4,cbdefine6,cbdefine1,cbdefine2,cbdefine7,cbdefine9,cbdefine11) Values 
-		 --(@p6-@whilecount+1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)
+		 Insert Into rdrecords01_ExtraDefine(autoid) Values  (@p6-@rowcount+1)
 		 
-		set @whilecount = @whilecount - 1
+		set @rowcount = @rowcount - 1
+		
+		fetch next from autoid_cursor into @autoid
 	end
+	
+	close autoid_cursor
+	deallocate autoid_cursor
+	
 	fetch next from db_cursor into @id, @rowcount
 
 end
@@ -112,6 +112,18 @@ begin
 	select 'main', * from #main
 	select 'detail', * from #detail
 end
+
+insert into rdrecord01(id,brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,ccode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount)
+select * from #main
+
+Insert Into rdrecord01_ExtraDefine(id)
+select id from #main
+
+Insert Into rdrecords01(autoid,id,cinvcode,inum,iquantity,iunitcost,iprice,iaprice,ipunitcost,ipprice,cbatch,cvouchcode,cinvouchcode,cinvouchtype,isoutquantity,isoutnum,cfree1,cfree2,dsdate,itax,isquantity,isnum,imoney,ifnum,ifquantity,dvdate,cposition,cdefine22,cdefine23,cdefine24,cdefine25,cdefine26,cdefine27,citem_class,citemcode,iposid,facost,cname,citemcname,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10,cbarcode,inquantity,innum,cassunit,dmadedate,imassdate,cdefine28,cdefine29,cdefine30,cdefine31,cdefine32,cdefine33,cdefine34,cdefine35,cdefine36,cdefine37,icheckids,cbvencode,cgspstate,iarrsid,ccheckcode,icheckidbaks,crejectcode,irejectids,ccheckpersoncode,dcheckdate,ioritaxcost,ioricost,iorimoney,ioritaxprice,iorisum,itaxrate,itaxprice,isum,btaxcost,cpoid,cmassunit,imaterialfee,iprocesscost,iprocessfee,dmsdate,ismaterialfee,isprocessfee,iomodid,strcontractid,strcode,cbaccounter,dbkeepdate,bcosting,isumbillquantity,bvmiused,ivmisettlequantity,ivmisettlenum,cvmivencode,iinvsncount,impcost,iimosid,iimbsid,cbarvcode,dbarvdate,iinvexchrate,corufts,iexpiratdatecalcu,cexpirationdate,dexpirationdate,cciqbookcode,ibondedsumqty,iordertype,iorderdid,iordercode,iorderseq,isodid,isotype,csocode,isoseq,cbatchproperty1,cbatchproperty2,cbatchproperty3,cbatchproperty4,cbatchproperty5,cbatchproperty6,cbatchproperty7,cbatchproperty8,cbatchproperty9,cbatchproperty10,cbmemo,ifaqty,istax,irowno,strowguid,idebitids,ioldpartid,foldquantity,cbsysbarcode,bmergecheck,imergecheckautoid,creworkmocode,ireworkmodetailsid,iproducttype,cmaininvcode,imainmodetailsid,isharematerialfee,cplanlotcode,bgift,iposflag)
+select * from #detail
+
+--Insert Into rdrecords01_ExtraDefine(autoid)
+--select autoid from #detail
 
 -- now update the quantity
 update rdrecords01 set corufts ='' where id = (select id from #main)
@@ -139,6 +151,15 @@ begin
 	select '#target', * from #Ufida_WBBuffers_PurchaseIn_Target
 end
 
+ select CONVERT(DECIMAL(38,3),ISNULL(T1.fReceivedQTY,0))+CONVERT(DECIMAL(38,3),ISNULL(T2.iQuantity,0)), 
+ CONVERT(DECIMAL(38,3),ISNULL(T1.fReceivedNum,0))+CONVERT(DECIMAL(38,3),ISNULL(T2.iNum,0)) 
+ FROM Po_Podetails T1
+ INNER JOIN (
+	select sum(t2.iquantity) as iquantity,sum(t2.inum) as inum,iposid 
+	from pu_arrivalvouchs 
+	inner join  #Ufida_WBBuffers_PurchaseIn_Target AS T2 ON T2.idID=pu_arrivalvouchs.autoID 
+	where isnull(iposid,0)<>0 group by iposid ) T2 on T2.iposid=t1.id
+	
 /*
  UPDATE T1 
  SET  T1.fReceivedQTY=CONVERT(DECIMAL(38,3),ISNULL(T1.fReceivedQTY,0))+CONVERT(DECIMAL(38,3),ISNULL(T2.iQuantity,0)), 
