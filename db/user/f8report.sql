@@ -11,3 +11,9 @@ grant insert,update,delete on CustInvSpec to f8report
 grant insert,update,delete on CustInvSpecDetail to f8report
 grant insert,update,delete on CustSpecProperty to f8report
 grant insert,update,delete on CustSpecPropertyOption to f8report
+
+use UFSystem
+go
+create user f8report for login f8report;
+grant select on SCHEMA::dbo to f8report;
+go
