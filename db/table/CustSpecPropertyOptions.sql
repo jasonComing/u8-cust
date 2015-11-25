@@ -6,3 +6,4 @@ create table CustSpecPropertyOption
 	SortOrder int not null,
 	constraint ix_CustSpecPropertyOption unique (PropertyId, SpecValue, SortOrder)
 )
+grant insert,update,delete on CustSpecPropertyOption to f8report
