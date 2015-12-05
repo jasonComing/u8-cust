@@ -1,0 +1,15 @@
+Tools = -20, 50, 793, 573, 
+BuildTxt = 110, 110, 923, 633, 
+BtnDemo = 22, 22, 835, 545, 
+SOsImport = 175, 175, 1146, 546, 
+FrmDemo = 25, 25, 904, 458, , 44, 44, 857, 567, C
+Button = 0, 0, 689, 433, 
+FrmInputInv = 100, 100, 789, 533, , 66, 66, 879, 589, C
+FrmControls = 50, 50, 929, 483, , 0, 0, 879, 433, C
+POsImport = 175, 175, 976, 608, 
+SOsImportMemo = 25, 25, 826, 458, 
+F_SOsImportMemo = 150, 150, 951, 583, , 50, 50, 851, 483, C
+SOsImportPrint = 100, 100, 901, 533, 
+SOsImportOut = 125, 125, 926, 558, 
+FPrintAndOut = 175, 175, 976, 608, Z, 100, 100, 901, 533, C
+SOsImportPrintAndOut = 150, 150, 951, 583, 

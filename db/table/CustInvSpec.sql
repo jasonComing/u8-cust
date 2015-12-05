@@ -17,3 +17,5 @@ alter table CustInvSpec add	ApprovedDate datetime null
 
 update CustInvSpec
 set ApprovedBy = CreatedBy, ApprovedDate = getdate()
+
+alter table CustInvSpec add [Status] tinyint default 0 not null

@@ -1,0 +1,17 @@
+
+--销售订单
+Delete  From  [AA_CustomerButton] where [cButtonID]  ='{64F5291F-2AED-4065-8EDB-500C278A4A9B}'
+INSERT INTO [AA_CustomerButton]
+(
+	[cButtonID], [cButtonKey], [cButtonType], [cProjectNO], [cFormKey], 
+	[cVoucherKey], [cKeyBefore], [iOrder], [cGroup], [cCustomerObjectName], 
+	[cCaption], [cLocaleID], [cImage], [cToolTip], [cHotKey], 
+	[bInneralCommand], [cVariant], [cVisibleAsKey], [cEnableAsKey]
+)
+--销售订单
+Select
+
+	'{64F5291F-2AED-4065-8EDB-500C278A4A9B}','btnImportXls','default', 'U8CustDef','17', 
+	'17','save', '0', 'IEDIT','U8101VouchPlugin.SOsImport',
+	'XLS导入','zh-cn','','XLS导入','',
+	1,'XLS导入到表体','save','save'
