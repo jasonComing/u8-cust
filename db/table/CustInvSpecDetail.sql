@@ -8,3 +8,5 @@ create table CustInvSpecDetail
 	LastModified datetime default getdate()
 	primary key (cInvCode, Version, PropertyId)
 )
+
+alter table CustInvSpecDetail alter column SpecValue nvarchar(400) not null
