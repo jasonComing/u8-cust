@@ -7,3 +7,15 @@ create table CustSpecProperty
 )
 go
 grant insert,update,delete on CustSpecProperty to f8report
+
+
+alter table CustSpecProperty add PropertyType int default 0
+
+
+update CustSpecProperty
+set PropertyType = 0
+where PropertyId not in (70, 71, 72, 73)
+
+update CustSpecProperty
+set PropertyType = 1
+where PropertyId in (70, 71, 72, 73)
