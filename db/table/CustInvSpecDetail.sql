@@ -8,3 +8,5 @@ create table CustInvSpecDetail
 	LastModified datetime default getdate()
 	primary key (cInvCode, Version, PropertyId)
 )
+go
+grant insert,update,delete on CustInvSpecDetail to f8report
