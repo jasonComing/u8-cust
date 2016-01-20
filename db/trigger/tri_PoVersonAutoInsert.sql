@@ -17,3 +17,5 @@ begin
 	where c.Status = 1 and
 	(e.cbdefine27 is null OR e.cbdefine27 = '')
 end
+
+
