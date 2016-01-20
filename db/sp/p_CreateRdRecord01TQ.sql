@@ -25,11 +25,7 @@ join rdrecords01 d on d.id = m.id
 join rdrecords01_ExtraDefine e on e.autoid = d.autoid
 where e.cbdefine7 is not null
 and cCode = isnull(@cCode, cCode)
-
---create table #NewRdRecords
---(
---	Id int
---)
+and not exists (select 1 from rdrecord01 innerM where innerM.cCode = m.cCode + '_TQ')
 
 select 0 as id, brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,cCode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount
 into #main
@@ -113,8 +109,10 @@ begin
 	select 'detail', * from #detail
 end
 
-insert into rdrecord01(id,brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,ccode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount)
-select * from #main
+insert into rdrecord01(id,brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,ccode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount,
+iverifystate ,cHandler, dVeriDate)
+select *, 0, 'system', convert(char(10), getdate(), 121)
+from #main
 
 Insert Into rdrecord01_ExtraDefine(id)
 select id from #main
@@ -126,13 +124,13 @@ select * from #detail
 --select autoid from #detail
 
 -- now update the quantity
-update rdrecords01 set corufts ='' where id = (select id from #main)
+update rdrecords01 set corufts ='' where id in (select id from #main)
 
 select a.id,autoid ,1 * convert (decimal(30,3),iquantity) as iquantity,1 * convert(decimal(30,3),inum) as iNum, 1 * iPrice as Imoney ,a.Cinvcode, Corufts  as Corufts, iArrsID,iPOsID,iOMoDID,iIMBSID,iIMOSID,isotype,iSoDid,iRejectIds,iCheckIdBaks ,csource,cbustype,iCheckIds,  bMergeCheck,iMergeCheckAutoId, 2 as iOperate   
 into #Ufida_WBBuffers_PurchaseIn
 from rdrecord01 b 
 inner join rdrecords01 a on a.id=b.id 
-where b.id=(select id from #main)
+where b.id in (select id from #main)
 
 select max(id) as id,autoid,Sum(iquantity) as iquantity,sum(inum) as inum,sum(imoney) as imoney,max(cinvcode) as cinvcode ,Max(corufts) as corufts,  max(iArrsID) as iArrsID,max(iPOsID) as iPOsID,max(iOMoDID) as iOMoDID,max(iIMBSID) as iIMBSID ,max(iIMOSID) as iIMOSID, max(isotype) as isotype,max(iSoDid) as iSoDid,max(iRejectIds) as iRejectIds,max(iCheckIdBaks) as iCheckIdBaks , isnull(bMergeCheck,0) as bMergeCheck,max(iMergeCheckAutoId) as iMergeCheckAutoId,  max(csource) as csource,max(cbustype) as cbustype,sum(iOperate) as iOperate, case  sum(iOperate)  when 3 then N'M' when 2 then N'A' when 1 then N'D' end as editprop  
 into  #Ufida_WBBuffers_PurchaseIn_ST 
@@ -160,7 +158,7 @@ end
 	inner join  #Ufida_WBBuffers_PurchaseIn_Target AS T2 ON T2.idID=pu_arrivalvouchs.autoID 
 	where isnull(iposid,0)<>0 group by iposid ) T2 on T2.iposid=t1.id
 	
-/*
+
  UPDATE T1 
  SET  T1.fReceivedQTY=CONVERT(DECIMAL(38,3),ISNULL(T1.fReceivedQTY,0))+CONVERT(DECIMAL(38,3),ISNULL(T2.iQuantity,0)), 
  T1.fReceivedNum=CONVERT(DECIMAL(38,3),ISNULL(T1.fReceivedNum,0))+CONVERT(DECIMAL(38,3),ISNULL(T2.iNum,0)) 
@@ -170,5 +168,5 @@ end
 	from pu_arrivalvouchs 
 	inner join  #Ufida_WBBuffers_PurchaseIn_Target AS T2 ON T2.idID=pu_arrivalvouchs.autoID 
 	where isnull(iposid,0)<>0 group by iposid ) T2 on T2.iposid=t1.id
-*/
+
 END

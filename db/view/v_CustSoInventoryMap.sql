@@ -1,4 +1,4 @@
-CREATE VIEW dbo.v_CustSoInventoryMap
+ALTER VIEW dbo.v_CustSoInventoryMap
 AS
 	-- Display SO No, Inventory Code
 	select c.cSOCode, d.cInvCode
@@ -8,4 +8,9 @@ AS
 		from SO_SODetails 
 		where SO_SODetails.ID = c.ID
 		and cInvCode != 'D_GENERAL')
+	where len(c.csocode) = 10
+	and c.csocode not like '%/%'
+	and c.csocode not like '%\%'
+	and c.csocode not like '%-%'
+
 GO

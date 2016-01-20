@@ -9,8 +9,14 @@ create table CustInvSpecDetail
 	primary key (cInvCode, Version, PropertyId)
 )
 
-
 alter table CustInvSpecDetail add cVenCode nvarchar(40) null
 
 alter table CustInvSpecDetail drop constraint PK__CustInvS__81F301AC38946F48
 alter table add constraint pk_CustInvSpecDetail primary key (Id)
+
+go
+grant insert,update,delete on CustInvSpecDetail to f8report
+go
+alter table CustInvSpecDetail alter column SpecValue nvarchar(400) not null
+go
+
