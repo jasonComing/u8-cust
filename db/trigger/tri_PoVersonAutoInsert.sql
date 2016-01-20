@@ -9,7 +9,7 @@ on PO_Podetails_ExtraDefine
 as
 begin
 	update e  
-	set cbdefine27 = isnull(c.Version,'')
+	set cbdefine27 = c.Version
 	from PO_Podetails_ExtraDefine e
 	inner join inserted i on e.ID = i.ID
 	inner join PO_Podetails s on e.id = s.id
