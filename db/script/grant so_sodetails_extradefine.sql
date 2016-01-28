@@ -1,0 +1,1 @@
+grant update on so_sodetails_extradefine to f8report
