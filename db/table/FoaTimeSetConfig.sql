@@ -1,4 +1,4 @@
-Create Table FoaTimeSetConfig
+Create Table CustFoaTimeSetConfig
 (
 	ShipCode varchar(10),
 	FromDate varchar(4),
@@ -7,7 +7,13 @@ Create Table FoaTimeSetConfig
 	LastModified datetime default getdate()
 )
 go
-create unique clustered index cIdx_FoaTimeSetConfig on FoaTimeSetConfig(ShipCode, FromDate, ToDate)
+create unique clustered index cIdx_FoaTimeSetConfig on CustFoaTimeSetConfig(ShipCode, FromDate, ToDate)
 go
-grant select on FoaTimeSetConfig to f8report
+grant select on CustFoaTimeSetConfig to f8report
+go
+
+
+insert CustFoaTimeSetConfig (ShipCode, FromDate, ToDate, Timeset)
+select ShipCode, FromDate, ToDate, Timeset
+from Cust001..FoaTimeSetConfig
 go

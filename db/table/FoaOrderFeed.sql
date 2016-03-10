@@ -1,6 +1,6 @@
 use Cust004
 go
-Create table StagingFoaNewOrder
+Create table CustFoaOrderFeed
 (
 Id   int identity,
 Date	datetime not null,
@@ -11,7 +11,7 @@ OrderLine	varchar(10) null,
 SoNo	varchar(50) null,
 Style	varchar(50) null,
 Brand		varchar(20) null,
-UnitPrice	decimal null,
+UnitPrice	decimal(20, 4) null,
 PoOrderQty	int null,
 OrderType  varchar(50) null,
 LineType	varchar(20) null,
@@ -20,11 +20,12 @@ CreateDate  datetime null,
 ShipWindow	datetime null,
 ShipTo	varchar(20) null,
 ShippingAgent varchar(50) null,
-Factory  varchar(50) null
+Factory  varchar(50) null,
+LastModified datetime default getdate()
 )
 go
-create index idx_FoaNewOrder on StagingFoaNewOrder(Date)
+create index idx_FoaOrderFeed on CustFoaOrderFeed(Date)
 go
-grant select,insert,update,delete on StagingFoaNewOrder to f8report
+grant select,insert,update,delete on CustFoaOrderFeed to f8report
 
-insert into StagingFoaNewOrder (Date, OrderStatus, TypeOfChange, PoNo, OrderLine, SoNo, Style, Brand, UnitPrice, PoOrderQty, LineType, Season, CreateDate, ShipWindow, ShipTo, ShippingAgent, Factory) values ()
+insert into CustFoaOrderFeed (Date, OrderStatus, TypeOfChange, PoNo, OrderLine, SoNo, Style, Brand, UnitPrice, PoOrderQty, LineType, Season, CreateDate, ShipWindow, ShipTo, ShippingAgent, Factory) values ()

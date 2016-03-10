@@ -1,4 +1,4 @@
-create table FoaShipMethodConfig
+create table CustFoaShipMethodConfig
 (
 	Id int identity,
 	Regex varchar(200) not null,
@@ -7,5 +7,11 @@ create table FoaShipMethodConfig
 	LastModified datetime default getdate() not null
 )
 go
-grant select on FoaShipMethodConfig to f8report
+grant select on CustFoaShipMethodConfig to f8report
+go
+
+insert CustFoaShipMethodConfig (Regex, ShipMethod, Sort)
+select Regex, ShipMethod, Sort
+from Cust001..FoaShipMethodConfig
+
 go
