@@ -17,5 +17,4 @@ grant select,insert,update,delete on CustJotorRecord to f8report
 go
 
 insert CustJotorRecord (Year, JobSeed, RequestedBy, RequestedAt, ReturnedBy, ReturnedAt, ReusedById, ReusedAt)
-select Year, JobSeed, RequestedBy, RequestedAt, ReturnedBy, ReturnedAt, ReusedById, ReusedAt
-from Cust001..JotorRecord
+values (16, 2074, 'system', getdate(), null, null, null, null)
