@@ -1,18 +1,23 @@
-CREATE  trigger [dbo].[tri_UpdateSoDetails_setActualQty] ON [dbo].[SO_SODetails]  
+create  trigger [dbo].[tri_UpdateSoDetails_setActualQty] ON [dbo].[SO_SODetails]  
 /*
-¹¦ÄÜ£ºµ±ÏúÊÛ¶©µ¥¹Ø±ÕĞĞÊ±£¬×Ô¶¯½«ÒÑ¾­¿ªÆ±µÄÊıÁ¿»ØĞ´µ½"Êµ¼ÊÊıÁ¿"Ò»ÁĞ
+åŠŸèƒ½ï¼šå½“é”€å”®è®¢å•å…³é—­è¡Œæ—¶ï¼Œè‡ªåŠ¨å°†å·²ç»å¼€ç¥¨çš„æ•°é‡å›å†™åˆ°"å®é™…æ•°é‡"ä¸€åˆ—
 */ 
 FOR Update,insert
 AS  
 set nocount on  
 
+declare @quantity int
+select @quantity = case
+  when id.cscloser is null then isnull(id.iQuantity,0)
+  else isnull(id.iKPQuantity, 0)
+  end
+from inserted id
+
 update SO_SODetails_ExtraDefine
-set cbdefine30 = case
-  when i.cscloser is null then isnull(i.iQuantity,0)
-  else isnull(i.iKPQuantity, 0)
-  end,
-  cbdefine31=cbdefine30 * i.iUnitPrice  
+set cbdefine30 = @quantity,
+  cbdefine31=@quantity * i.iUnitPrice  
 from SO_SODetails_ExtraDefine s
 inner join inserted i on s.isosid = i.isosid
 
 set nocount off
+
