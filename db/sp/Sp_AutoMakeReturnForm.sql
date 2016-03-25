@@ -133,6 +133,7 @@ begin
 	join rdrecords01 d on d.id = m.id
 	join rdrecords01_ExtraDefine e on e.autoid = d.autoid
 	where e.cbdefine26 is not null
+	and e.cbdefine26 > 0
 	and cCode = isnull(@formNO, cCode)
 	and not exists (select 1 from PU_ArrivalVouch innerM where innerM.cCode = d.cbarvcode + '_RT')
 
