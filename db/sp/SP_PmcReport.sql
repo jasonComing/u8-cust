@@ -21,7 +21,8 @@ BEGIN
 	where  (ddate between  @Begindate and  @Enddate)
 	and (SO_SOMain.cSocode like 'J%') and(SO_SOMain.cSocode  not like '%SP')
 	and SO_SODetails.cInvCode  like 'D_%'
-	and SO_SODetails.cInvCode not like 'D_GENERAL%'
+	--and SO_SODetails.cInvCode not like 'D_GENERAL%'
+
 
  --取出销售订单主要信息
 
@@ -40,7 +41,9 @@ BEGIN
 	left join Inventory_extradefine g on b.cinvCode=g.cinvCode
 	left join Inventory h on b.cinvCode=h.cinvCode
 	where a.csocode in(select cSocode  from #temptb1)
+	and isnull(e.cbdefine30,0) > 0 
 	order by a.dDate,c.cCusAbbName,a.csocode,b.cinvCode,b.iRowNo
+	
 	
  --select '销售订单行信息', * from #tbPMCmain
 
@@ -71,7 +74,9 @@ BEGIN
 	 select '622',9 union
 	 select '658',9 union
 	 select '621',10 union
-	 select '623',11  
+	 select '623',11 union 
+	 select '606',12 union 
+	 select '620',13 
 
  --取出BOM信息,并按规则排序
 	select  h.InvCode as ParentInvCode, d.DInvCode as ChildInvCode, d.DInvName as ChildName,left(d.DInvCode,3) as invclass,tb.sortNum
@@ -527,18 +532,24 @@ BEGIN
 	and isnull(iQuantity,0) > 0
 	group by iSodid,cInvCode
 
-	--更新数据
+	--更新数据-绑定的库存
 	update #tbResult 
-			set StockLock=tbstock.iQuantityLock,
-				 StockFree=tbstock.iQuantityFree
-	from #tbResult
-	join (select #StockLock.iSodid,#StockLock.cInvCode,isnull(#StockLock.iQuantity,0) as 'iQuantityLock',isnull(#StockFree.iQuantity,0) as 'iQuantityFree'
-			from #StockLock left join #StockFree on #StockLock.cInvCode=#StockFree.cInvCode
-			where #StockLock.iSodid is not null
-			) as tbstock
-			on #tbResult.OrderNum = tbstock.iSodid and #tbResult.ChildInvCode = tbstock.cInvCode
+			set StockLock=#StockLock.iQuantity
+	from #tbResult	
+	join #StockLock on #tbResult.OrderNum = #StockLock.iSodid and #tbResult.ChildInvCode = #StockLock.cInvCode
 	where #tbResult.RowType=2
 
+	--更新数据-自由库存
+	update #tbResult 
+			set  StockFree=#StockFree.iQuantity
+	from #tbResult join  #StockFree	on  #tbResult.ChildInvCode = #StockFree.cInvCode
+	where #tbResult.RowType=2
+
+	--列出D_GENERAL料號的備註說明
+	update #tbResult set #tbResult.InvName=SO_SODetails.cMemo
+	from #tbResult 
+	join SO_SODetails on(#tbResult.OrderNum=SO_SODetails.csocode and #tbResult.RowNo=SO_SODetails.iRowNo )
+	where #tbResult.RowType=1 and #tbResult.InvCode='D_GENERAL'
 
  --查询显示结果行
  select * from #tbResult  order by OrderNum,RowNo,InvCode  desc
