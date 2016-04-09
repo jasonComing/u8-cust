@@ -5,7 +5,7 @@ alter  PROCEDURE [dbo].[SP_PmcReport]
 	  /*
 	 功能：pmc销售订单、采购、等信息跟踪报表
 	 auth:jams
-	 调用实例：exec  SP_PmcReport '2015-03-01 00:00:01.000','2016-01-10 23:59:59.000'
+	 调用实例：exec  SP_PmcReport '2015-10-01 00:00:01.000','2016-01-10 23:59:59.000'
 	 */
 AS
 BEGIN
@@ -20,8 +20,7 @@ BEGIN
 	from SO_SOMain left join  SO_SODetails on SO_SOMain.cSOCode=SO_SODetails.cSOCode
 	where  (ddate between  @Begindate and  @Enddate)
 	and (SO_SOMain.cSocode like 'J%') and(SO_SOMain.cSocode  not like '%SP')
-	and SO_SODetails.cInvCode  like 'D_%'
-	--and SO_SODetails.cInvCode not like 'D_GENERAL%'
+	and (SO_SODetails.cInvCode  like 'D_%' OR SO_SODetails.cInvCode  like 'S_%')
 
 
  --取出销售订单主要信息
@@ -43,8 +42,7 @@ BEGIN
 	where a.csocode in(select cSocode  from #temptb1)
 	and isnull(e.cbdefine30,0) > 0 
 	order by a.dDate,c.cCusAbbName,a.csocode,b.cinvCode,b.iRowNo
-	
-	
+
  --select '销售订单行信息', * from #tbPMCmain
 
  --以订单号、料号分组统计订单量，
@@ -54,14 +52,12 @@ BEGIN
 	group by  OrderNum,InvCode order by OrderNum
 
 	--设定BOM排序规则(机芯，壳面针的带)
-
 	create table #tb_order(
 		CinvClass varchar(10),
 		sortNum int
 	)
 	
  --只查找以下配件(机芯，壳、面、针、的、带)
-
 	 insert into #tb_order(CinvClass,sortNum)
 	 select '604',1 union
 	 select '601',2 union
@@ -76,9 +72,11 @@ BEGIN
 	 select '621',10 union
 	 select '623',11 union 
 	 select '606',12 union 
-	 select '620',13 
+	 select '620',13 union
+	 select '609',14 
 
- --取出BOM信息,并按规则排序
+
+ --取出BOM信息,(变更:僅取機芯，其它配件,以采购人员出的料号为准.)
 	select  h.InvCode as ParentInvCode, d.DInvCode as ChildInvCode, d.DInvName as ChildName,left(d.DInvCode,3) as invclass,tb.sortNum
 	into #tb_bom
 	from v_bom_head h
@@ -86,7 +84,7 @@ BEGIN
 	left join Inventory_extradefine x on x.cInvCode = h.InvCode
 	join  #tb_order tb on left(d.DInvCode,3)=tb.CinvClass
 	where (h.InvCode in( select InvCode  from #tbPMCmain ))
-	and d.DInvCode not like 'P_%'
+	and d.DInvCode  like '604_%'
 	order by h.InvCode,tb.sortNum
 
  --将订单记录表与BOM表，合并为一个表显示
@@ -96,6 +94,8 @@ BEGIN
 	left join #tb_bom b2 on a1.InvCode=b2.ParentInvCode
 	order by a1.InvCode,b2.ParentInvCode,b2.sortNum
 	
+	-- select 'bom表',* from  #tbPMCmainSubAndBom
+
 	--按采购订单+料号列出PO采购订量
 	select a3.csocode,a3.cinvCode,a3.iQuantity,b3.cpoid ,a3.irowno,v3.cVenAbbName
 	into #tbPOmain
@@ -118,7 +118,7 @@ BEGIN
 	and (left(OM_MODetails.cinvCode,3) in(select CinvClass  from #tb_order))
 	order by OM_MODetails.csocode
 	
-	--合并PO采购表与OM委外订单，并分组合计数量
+	--合并PO采购表与OM委外订单表，并分组合计数量
    select tbsub.csocode,tbsub.cinvCode,tbsub.cpoid,sum(iQuantity)as 'iQuantity',tbsub.cVenAbbName
 	into #tbPooMSum
 	from (select * from #tbPOmain
@@ -127,8 +127,35 @@ BEGIN
 		  ) as tbsub
 	group by tbsub.csocode,tbsub.cinvCode,tbsub.cpoid,tbsub.cVenAbbName
 	
- --select'采购订单信息', * from #tbPooMSum order by csocode,cpoid
+	--select'采购订单信息', * from #tbPooMSum order by csocode,cpoid
  
+
+ --列出JOB的有關料件(以JOB号查找,包含所有已經出PO單的料件,同时,加上机芯)
+	select OrderNum as 'jobNum',ChildInvCode as 'cinvcode' ,ChildName as 'cinvName',left(ChildInvCode,3) as 'classtype',sortNum  as 'sortNum'
+	into #tbJobInvcode
+	from #tbPMCmainSubAndBom 
+	union
+		select csocode as 'jobNum',Inventory.cinvCode  as 'cinvcode',Inventory.cInvName as 'cinvName',left(Inventory.cinvCode,3) as 'classtype',
+				#tb_order.sortNum as 'sortNum'
+		from  #tbPooMSum 
+		left join Inventory on	#tbPooMSum.cinvCode=Inventory.cInvCode
+		join #tb_order on left(#tbPooMSum.cinvCode,3)=#tb_order.CinvClass
+
+	--select '訂單所用料號', * from  #tbJobInvcode
+	--left join #tb_order on #tbJobInvcode.classtype=#tb_order.CinvClass 
+	--order by jobNum,#tb_order.sortNum 
+
+	--清空並填充job號與相關料號關連表,等同于BOM表
+	truncate table #tbPMCmainSubAndBom
+
+	insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+	 select OrderNum,	InvCode,OrderQuantity,'',cinvcode,cinvName,sortNum
+	 from #tbPMCmainSub
+	 right join #tbJobInvcode on  #tbPMCmainSub.OrderNum=#tbJobInvcode.jobNum
+	 order by #tbPMCmainSub.OrderNum,#tbJobInvcode.sortNum
+
+	-- select 'job與料號',* from  #tbPMCmainSubAndBom
+
 
  --按采购订单/委外订单+料号列出 到货数量0,退贷数量1拒收数量2，（ibilltype） ，
 	select a4.cordercode,b4.ccode,a4.cinvCode,a4.iquantity,b4.ibilltype
@@ -152,7 +179,7 @@ BEGIN
  --select '采购入库信息',* from  #tbRd
 	
 	--列出生产订单信息
-	--取表头定义有JOB号
+	--取表头定义有JOB号(期初部分)
 	select b6.define2 as 'socode',a6.invCode,a6.Qty,b6.MoCode,b6.CreateDate
 	into #tbRD01
 	from mom_orderdetail  a6
@@ -160,7 +187,7 @@ BEGIN
 	where (b6.define2 in (select cSocode from #temptb1))
 	and (a6.invCode like 'D_%' or a6.invCode like 'S_%')
 
- --取需求跟踪号包含有JOB号(期初部分)
+ --取需求跟踪号包含有JOB号
  	select a6.SoCode as 'socode',a6.invCode,a6.Qty,b6.MoCode,b6.CreateDate
 	into #tbRD02
 	from mom_orderdetail  a6
@@ -236,7 +263,7 @@ BEGIN
 		 KPQuantity [float] NULL,
 		 ParentInvCode [nvarchar](30) NULL,
 		 ChildInvCode [nvarchar](30) NULL,
-		 InvName [nvarchar](100) NULL,
+		 InvName [nvarchar](300) NULL,
 		 StockLock [float] NULL,
 		 StockFree [float] NULL,
 		 Venter [varchar](100) NULL,
@@ -261,7 +288,7 @@ BEGIN
 		 SaleBillRecord [varchar](max) NULL
 	)
 
- ----插入主表信息－销售表体行信息
+ ----插入主表信息－销售订单表体行信息
 	insert into #tbResult(RowType,OrderDate,JobDate,ShipDate,CountryCode,ShipWhere,SapNO,KePoNum,Custumer,
 			SaleType,TeamName,SoType,OrderNum,RowNo,InvCode,SkuNO,Modle,MoveMent,DiZi,ShipWay,OrderQuantity,KPQuantity,
 			ParentInvCode,ChildInvCode,InvName,StockLock,StockFree,Venter,PoNum,PoQuantity,ArrQuantitySum,ArrReturSum,RdInStoreSum,RdUninSum,ArrDate,
@@ -338,26 +365,22 @@ BEGIN
 			ArrDate=NULL
 		from #tbResult
 		left join #tbPooMSum on (#tbResult.OrderNum=#tbPooMSum.csocode and #tbResult.ChildInvCode=#tbPooMSum.cInvCode )
-
 		left join (select cordercode,cinvCode,ibilltype,sum(iquantity) as 'iquantity' 
 			from #tbArr
 			where ibilltype=0
 			group by cordercode,cinvCode,ibilltype) as tbarrSub
 		on (#tbPooMSum.cPOID=tbarrSub.cordercode and #tbPooMSum.cInvCode= tbarrSub.cInvCode)
-
 		left join (select cordercode,cinvCode,ibilltype,sum(iquantity) as 'iquantity' 
 				from #tbArr
 				where ibilltype=1 or ibilltype=2
 				group by cordercode,cinvCode,ibilltype) as tbarrReturnSub
 		on (#tbPooMSum.cPOID=tbarrReturnSub.cordercode and #tbPooMSum.cInvCode= tbarrReturnSub.cInvCode)
-
 		left join (select #tbRd.csocode,#tbRd.cPOID,#tbRd.cinvCode,sum(iquantity) as 'iquantity'
 				from #tbRd group by csocode,cPOID,cinvCode ) as tbRdsub
 	on (tbRdsub.csocode=#tbPooMSum.csocode
 	and tbRdsub.cInvCode=#tbPooMSum.cInvCode
 	and tbRdsub.cPOID= #tbPooMSum.cpoid )
 	where #tbResult.RowType=2
-		
 		
 				 
  --取最小的ID,定位插入生产订单的位置
