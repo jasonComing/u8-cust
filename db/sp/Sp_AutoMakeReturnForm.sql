@@ -49,7 +49,7 @@ Insert Into PU_ArrivalVouchs_ExtraDefine(autoid,cbdefine3,cbdefine4,cbdefine1,cb
 */
 
 
-CREATE  proc [dbo].[sp_AutoMakeReturnForm]
+ALTER  proc [dbo].[sp_AutoMakeReturnForm]
 /*
 功能：依采购入库单上的拒收数量，
 		自动开到货拒收单据，单据号
@@ -58,7 +58,7 @@ CREATE  proc [dbo].[sp_AutoMakeReturnForm]
 		exec sp_AutoMakeReturnForm 'WPI16030744',1
 作者：jams
 */
-@formNO varchar(30), --採購入庫單號
+@formNO varchar(30) null, --採購入庫單號
 @debug int=0 --是1否0测试
 as 
 begin
@@ -69,8 +69,11 @@ begin
 	declare @ifatherid int			--主表main表ID
 	declare @ichild int				--子表details的行标记号
 	declare @ReturnNUM int			--拒收数量
+	declare @NewArvCode varchar(30) --新增的到貨單號
+	declare @MaxRejectCode varchar(30) --最後一張拒收單號
+	declare @RdsAutoId bigint       --採購入庫單表體號
 
-	select d.cbarvcode, d.iArrsId, e.cbdefine26   
+	select d.cbarvcode, d.iArrsId, e.cbdefine26, d.AutoId as RdsAutoId
 	into #tb
 	from rdrecord01 m
 	join rdrecords01 d on d.id = m.id
@@ -78,7 +81,8 @@ begin
 	where (e.cbdefine26 is not null )
 	and e.cbdefine26 > 0
 	and cCode = isnull(@formNO, cCode)
-	and not exists (select 1 from PU_ArrivalVouch innerM where innerM.cCode = d.cbarvcode + '_RT')
+	and not exists (select 1 from AutoReturnMapping where RdsAutoId = d.AutoId)
+
 
 	if @debug > 0
 	begin
@@ -101,6 +105,19 @@ begin
 		
 		select 'Id', @irowcount as count, @ifatherid as father, @ichild as child   
 	
+		set @MaxRejectCode = (
+			select  top 1 cCode
+			from PU_ArrivalVouch
+			where cCode like @ArvCode + '%'
+			order by cCode desc)
+
+		set @NewArvCode = (
+			case
+				when @MaxRejectCode like '%_RT' then @MaxRejectCode + '1'
+				when @MaxRejectCode like '%_RT%' then left(@MaxRejectCode, charindex('_', @MaxRejectCode)-1) + '_RT' + convert(varchar(10), convert(int, right(@MaxRejectCode, 1)) + 1)
+				else @MaxRejectCode + '_RT'
+			end)
+
 		insert into PU_ArrivalVouch([iVTid],[ID],[cCode],[cPTCode],[dDate],[cVenCode],[cDepCode],[cPersonCode],
 			[cPayCode],[cexch_name],[iExchRate],[iTaxRate],[cMemo],[cBusType],[cMaker],[bNegative],[cDefine1],
 			[cDefine10],[iDiscountTaxType],[iBillType],[cMakeTime],[cAuditDate],[caudittime],[cverifier],
@@ -109,7 +126,7 @@ begin
 		select 
 		8169, 
 		@ifatherid,
-		@ArvCode+'_RT',
+		@NewArvCode,
 		[cPTCode]
 		,CONVERT(date, getdate()) -- dDate
 		,[cVenCode]
@@ -135,7 +152,7 @@ begin
 		,[iPrintCount]
 		,[ccleanver]
 		,null   --[cpocode]  采购订单号
-		,'||pujs|'+@ArvCode+'_RT' --csysbarcode
+		,'||pujs|'+@NewArvCode --csysbarcode
 		from PU_ArrivalVouch
 		where cCode = @ArvCode
 
@@ -146,12 +163,12 @@ begin
 		set @rowcount = 1
 		-- Insert into detail table
 		declare detail_cursor cursor for
-			select iArrsId, cbdefine26
+			select iArrsId, cbdefine26, RdsAutoId
 			from #tb
 			where cbarvcode = @ArvCode 
 			
 		open detail_cursor
-		fetch next from detail_cursor into @ArvRowid, @ReturnNUM   ---到货表体行号，相应行拒收收数量
+		fetch next from detail_cursor into @ArvRowid, @ReturnNUM, @RdsAutoId   ---到货表体行号，相应行拒收收数量
 		while @@FETCH_STATUS = 0 
 		begin
 		
@@ -371,7 +388,7 @@ begin
            ,@rowcount --ivouchrowno 单据行号 
            ,[irowno] 
            ,null --cbMemo
-           ,'||pujs|' + @ArvCode + '_RT' + '|' + cast(ivouchrowno as varchar(2)) --cbsysbarcode 系统条码
+           ,'||pujs|' + @NewArvCode + '|' + cast(ivouchrowno as varchar(2)) --cbsysbarcode 系统条码
            ,@ArvCode   ---carrivalcode   -- 到货单号
            ,[ipickedquantity]
            ,[ipickednum]
@@ -392,8 +409,10 @@ begin
 		   --写入表身扩展表
 			Insert Into PU_ArrivalVouchs_ExtraDefine(autoid) Values (@ichild -@irowcount +@rowcount)
 
+			Insert into AutoReturnMapping (RdsAutoId, AvsAutoId) Values (@RdsAutoId, @ichild -@irowcount +@rowcount)
+
 		   set @rowcount = @rowcount + 1
-		   fetch next from detail_cursor into @ArvRowid, @ReturnNUM
+		   fetch next from detail_cursor into @ArvRowid, @ReturnNUM, @RdsAutoId
 		end
 		close detail_cursor
 		deallocate detail_cursor
