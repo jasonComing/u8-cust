@@ -1,36 +1,50 @@
-Create TRIGGER [dbo].[tri_AddProjectNOToDiZi]
+
+CREATE TRIGGER [dbo].[tri_AddProjectNOToDiZi]
 /*
-åŠŸèƒ½ï¼šé‡å°æ‰€æœ‰ICEå®¢æˆ·çš„é‡‡è´­è®¢å•ï¼Œå¦‚æœæ¡è³¼å–®æ“šä¸­æœ‰åº•è“‹æ–™ä»¶,
-		åº•å…§å­—ä¸€æ¬„åŠ ä¸Š projectè™Ÿ
-èª¿ç”¨æ–¹å¼:æ–°å¢æ¡è³¼å–®æ™‚,å³æ™‚è§¸ç™¼åŸ·è¡Œ.
+¹¦ÄÜ£ºá˜Œ¦ËùÓĞICE¿Í»§µÄ²É¹º¶©µ¥£¬Èç¹û’ñÙ†Î“şÖĞÓĞµ×ÉwÁÏ¼ş,
+		µ×ƒÈ×ÖÒ»™Ú¼ÓÉÏ projectÌ–
+Õ{ÓÃ·½Ê½:ĞÂÔö’ñÙ†Î•r,¼´•rÓ|°lˆÌĞĞ.
 */
    ON  [dbo].[PO_PODetails_extradefine]
    AFTER INSERT
 AS 
 BEGIN
 	SET NOCOUNT ON;
-	--cbdefine24 åº•å…§å­—
-	--cbdefine25 åº•å¤–å­—
-	--å–å‡ºæ¡è³¼è¨‚å–®çš„ç›¸é—œåº•è“‹è¡Œè™Ÿ,ä¸”ç‚ºICEå®¢æˆ¶çš„è¨‚å–®(id,jobno,d_xxx,projectno)
-	select i.ID,m.cSOCode,m.cInvCode,y.cInvDefine7 
-	into #temp 
-	from Inserted i join PO_PODetails  p on i.ID =p.ID
-	left join v_CustSoInventoryMap m on m.cSOCode= p.csocode
-	left join SO_SOMain so on m.cSOCode=so.cSOCode
-	join Inventory y on m.cInvCode=y.cInvCode
-	where p.cinvCode like '609%' 
-	and so.ccusNAME  Like 'ice%'
-	and i.cbdefine25 is null
+	--cbdefine24 µ×ƒÈ×Ö
+	--cbdefine25 µ×Íâ×Ö
+	--È¡³ö’ñÙÓ††ÎµÄÏàêPµ×ÉwĞĞÌ–,ÇÒéICE¿Í‘ôµÄÓ††Î(id,jobno,d_xxx,projectno)
+	--select i.ID,m.cSOCode,m.cInvCode,spectb.SpecValue
+	--into #temp 
+	--from Inserted i join PO_PODetails  p on i.ID =p.ID
+	--left join v_CustSoInventoryMap m on m.cSOCode= p.csocode
+	--left join SO_SOMain so on m.cSOCode=so.cSOCode
+	--join (select  cuS.cinvCode,cuS.Version,cuS.status,cuD.PropertyId,cuD.SpecValue
+	--		from CustInvSpec cuS
+	--		join  CustInvSpecDetail cuD on (cuS.cInvCode = cuD.cInvCode and cuS.Version = cuD.Version)
+	--		where cuS.status=1
+	--		and cuD.PropertyId=218
+	--		and (cuD.cInvCode like 'D%' or  cuD.cInvCode like 'S%')
+	--		) spectb  on m.cInvCode=spectb.cinvCode
+	--where p.cinvCode like '609%' 
+	--and so.cCusCode ='1008'
+	--and i.cbdefine25 is null
+	 select i.ID,cuD.SpecValue
+	 into #temp 
+	 from Inserted i
+	 join PO_PODetails p on i.ID =p.ID
+	 join v_CustSoInventoryMap m on m.cSOCode= p.csocode
+	 join SO_SOMain so on m.cSOCode=so.cSOCode
+	 join CustInvSpec cuS on cuS.cInvCode = m.cInvCode
+	 join CustInvSpecDetail cuD on (cuS.cInvCode = cuD.cInvCode and cuS.Version = cuD.Version)
+	 where cuS.status=1
+	 and cuD.PropertyId=218
+	 and p.cinvCode like '609%' 
+	 and so.cCusCode ='1008'
+	 and i.cbdefine25 is null
 	
-	--æ›´æ–°æ•¸æ“š	
-	update b set b.cbdefine25 = #temp.cInvDefine7
+	--¸üĞÂ”µ“ş	
+	update b set b.cbdefine25 = #temp.SpecValue
 	from PO_PODetails_extradefine b
 	join #temp on b.ID=#temp.ID
 
-	----åˆä¸¦å…§å­—+å¤–å­—,å¯«å…¥è¡¨é«”æ¬„ä½"åº•å­—/å…§å­—",ä»¥ä¾¿å¸¶åˆ°åˆ°è²¨å–®è¡¨é«”ä¸­
-	--update b set b.cbdefine1 = 'å…§å­—:'+b.cbdefine24 +'å¤–å­—:'+b.cbdefine25
-	--from PO_PODetails_extradefine b
-	--join #temp on b.ID=#temp.ID
-	--where  b.cbdefine1 is null
-	
 END
