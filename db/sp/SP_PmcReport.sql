@@ -1,20 +1,19 @@
-
 alter  PROCEDURE [dbo].[SP_PmcReport]
 	 @Begindate  datetime =null ,
 	 @Enddate   datetime =null
 	  /*
-	 åŠŸèƒ½ï¼špmcé”€å”®è®¢å•ã€é‡‡è´­ã€ç­‰ä¿¡æ¯è·Ÿè¸ªæŠ¥è¡¨
+	 ¹¦ÄÜ£ºpmcÏúÊÛ¶©µ¥¡¢²É¹º¡¢µÈĞÅÏ¢¸ú×Ù±¨±í
 	 auth:jams
-	 è°ƒç”¨å®ä¾‹ï¼šexec  SP_PmcReport '2015-10-01 00:00:01.000','2016-01-10 23:59:59.000'
+	 µ÷ÓÃÊµÀı£ºexec  SP_PmcReport '2016-01-01 00:00:01.000','2016-05-10 23:59:59.000'
 	 */
 AS
 BEGIN
---å®šä¹‰
+--¶¨Òå
 	SET NOCOUNT ON
 	if (@Begindate is null ) set @Begindate='2016-01-01 00:00:01.000'
 	if (@Enddate is null ) set @Enddate=getdate()
 
-	--å–å‡ºæ—¶æ®µå†…éœ€è¦å‚ä¸è¿ç®—çš„æ‰€æœ‰è®¢å•,ä½†ä¸åŒ…å«Pã€Rå•ç­‰è´¹ç”¨å•æ®ã€æ•£ä»¶è®¢å•
+	--È¡³öÊ±¶ÎÄÚĞèÒª²ÎÓëÔËËãµÄËùÓĞ¶©µ¥,µ«²»°üº¬P¡¢Rµ¥µÈ·ÑÓÃµ¥¾İ¡¢É¢¼ş¶©µ¥
 	select SO_SOMain.cSocode 
 	into #temptb1 
 	from SO_SOMain left join  SO_SODetails on SO_SOMain.cSOCode=SO_SODetails.cSOCode
@@ -23,10 +22,10 @@ BEGIN
 	and (SO_SODetails.cInvCode  like 'D_%' OR SO_SODetails.cInvCode  like 'S_%')
 
 
- --å–å‡ºé”€å”®è®¢å•ä¸»è¦ä¿¡æ¯
+ --È¡³öÏúÊÛ¶©µ¥Ö÷ÒªĞÅÏ¢
 
-	select  1 as 'RowType',Convert(varchar(10),a.dDate,23) as 'OrderDate',convert(varchar(10),b.cDefine36,23) as 'JobDate',
-	convert(varchar(10),b.dPredate,23) as 'ShipDate',e.cbdefine33 as 'CountryCode',b.cDefine22 as 'ShipWhere',b.cDefine23 as 'SapNO',
+	select  1 as 'RowType',Convert(varchar(10),a.dDate,23) as 'OrderDate',convert(varchar(10),b.dPreMoDate,23) as 'JobDate',
+	convert(varchar(10),b.dPreDate,23) as 'ShipDate',e.cbdefine33 as 'CountryCode',b.cDefine22 as 'ShipWhere',b.cDefine23 as 'SapNO',
 	b.cDefine25 as 'KePoNum',c.cCusAbbName as 'Custumer',d.cSTname as 'SaleType',f.chdefine9 as 'TeamName',
 	f.chdefine26 as'SoType',b.csocode as 'OrderNum',b.iRowNo as 'RowNo', b.cinvCode as 'InvCode',
 	h.cInvDefine1 as 'SkuNO',g.cidefine9 as 'Modle',h.cInvDefine9 as 'MoveMent',e.cbdefine1 as 'DiZi',
@@ -43,40 +42,41 @@ BEGIN
 	and isnull(e.cbdefine30,0) > 0 
 	order by a.dDate,c.cCusAbbName,a.csocode,b.cinvCode,b.iRowNo
 
- --select 'é”€å”®è®¢å•è¡Œä¿¡æ¯', * from #tbPMCmain
+ --select 'ÏúÊÛ¶©µ¥ĞĞĞÅÏ¢', * from #tbPMCmain
 
- --ä»¥è®¢å•å·ã€æ–™å·åˆ†ç»„ç»Ÿè®¡è®¢å•é‡ï¼Œ
+ --ÒÔ¶©µ¥ºÅ¡¢ÁÏºÅ·Ö×éÍ³¼Æ¶©µ¥Á¿£¬
 	select OrderNum,InvCode,sum(OrderQuantity)as OrderQuantity
 	into #tbPMCmainSub
 	from #tbPMCmain
 	group by  OrderNum,InvCode order by OrderNum
 
-	--è®¾å®šBOMæ’åºè§„åˆ™(æœºèŠ¯ï¼Œå£³é¢é’ˆçš„å¸¦)
+	--Éè¶¨BOMÅÅĞò¹æÔò(»úĞ¾£¬¿ÇÃæÕëµÄ´ø)
 	create table #tb_order(
 		CinvClass varchar(10),
-		sortNum int
+		sortNum int,
+		className varchar(10)
 	)
 	
- --åªæŸ¥æ‰¾ä»¥ä¸‹é…ä»¶(æœºèŠ¯ï¼Œå£³ã€é¢ã€é’ˆã€çš„ã€å¸¦)
-	 insert into #tb_order(CinvClass,sortNum)
-	 select '604',1 union
-	 select '601',2 union
-	 select '607',3 union
-	 select '605',4 union
-	 select '603',5 union
-	 select '617',6 union
-	 select '602',7 union
-	 select '619',8 union
-	 select '622',9 union
-	 select '658',9 union
-	 select '621',10 union
-	 select '623',11 union 
-	 select '606',12 union 
-	 select '620',13 union
-	 select '609',14 
+ --Ö»²éÕÒÒÔÏÂÅä¼ş(»úĞ¾£¬¿Ç¡¢Ãæ¡¢Õë¡¢µÄ¡¢´ø)
+	 insert into #tb_order(CinvClass,sortNum,className)
+	 select '604',1,'™CĞ¾' union
+	 select '601',2,'š¤' union
+	 select '607',3,'š¤' union
+	 select '605',4,'Ãæ' union
+	 select '603',5,'á˜' union
+	 select '617',6,'°ÍµÄ' union
+	 select '602',7,'§' union
+	 select '619',8,'Æ¤§' union
+	 select '622',9,'ä“§' union
+	 select '658',9,'¾W§' union
+	 select '621',10,'Äz§' union
+	 select '623',11,'ÊÖèC' union 
+	 select '606',12,'¿Û' union 
+	 select '620',13,'¿ÛÖÆ' union
+	 select '609',14,'µ×Éw' 
 
 
- --å–å‡ºBOMä¿¡æ¯,(å˜æ›´:åƒ…å–æ©ŸèŠ¯ï¼Œå…¶å®ƒé…ä»¶,ä»¥é‡‡è´­äººå‘˜å‡ºçš„æ–™å·ä¸ºå‡†.)
+ --È¡³öBOMĞÅÏ¢,(±ä¸ü:ƒHÈ¡™CĞ¾£¬ÆäËüÅä¼ş,ÒÔ²É¹ºÈËÔ±³öµÄÁÏºÅÎª×¼.)
 	select  h.InvCode as ParentInvCode, d.DInvCode as ChildInvCode, d.DInvName as ChildName,left(d.DInvCode,3) as invclass,tb.sortNum
 	into #tb_bom
 	from v_bom_head h
@@ -87,17 +87,17 @@ BEGIN
 	and d.DInvCode  like '604_%'
 	order by h.InvCode,tb.sortNum
 
- --å°†è®¢å•è®°å½•è¡¨ä¸BOMè¡¨ï¼Œåˆå¹¶ä¸ºä¸€ä¸ªè¡¨æ˜¾ç¤º
+ --½«¶©µ¥¼ÇÂ¼±íÓëBOM±í£¬ºÏ²¢ÎªÒ»¸ö±íÏÔÊ¾
 	select  a1.*,b2.ParentInvCode,b2.ChildInvCode,b2.ChildName,b2.sortNum
 	into #tbPMCmainSubAndBom
 	from #tbPMCmainSub a1 
 	left join #tb_bom b2 on a1.InvCode=b2.ParentInvCode
 	order by a1.InvCode,b2.ParentInvCode,b2.sortNum
 	
-	-- select 'bomè¡¨',* from  #tbPMCmainSubAndBom
+	--select 'bom±í',* from  #tbPMCmainSubAndBom
 
-	--æŒ‰é‡‡è´­è®¢å•+æ–™å·åˆ—å‡ºPOé‡‡è´­è®¢é‡
-	select a3.csocode,a3.cinvCode,a3.iQuantity,b3.cpoid ,a3.irowno,v3.cVenAbbName
+	--°´²É¹º¶©µ¥+ÁÏºÅÁĞ³öPO²É¹º¶©Á¿
+	select a3.csocode,a3.cinvCode,a3.iQuantity,b3.cpoid ,a3.irowno,v3.cVenAbbName,left(a3.cinvCode,3) as 'invClass'
 	into #tbPOmain
 	from  PO_Podetails a3
 	left join PO_Pomain b3 on  a3.poID=b3.poID
@@ -107,9 +107,9 @@ BEGIN
 	and (left(a3.cinvCode,3) in (select CinvClass  from #tb_order))
 	order by a3.csocode,c3.sortNum
 	
-	--æŒ‰å§”å¤–è®¢å•+æ–™å·åˆ—å‡ºå§”å¤–é‡‡è´­è®¢é‡
+	--°´Î¯Íâ¶©µ¥+ÁÏºÅÁĞ³öÎ¯Íâ²É¹º¶©Á¿
 	select OM_MODetails.csocode as 'csocode',OM_MODetails.cinvCode as 'cinvCode',OM_MODetails.iquantity as 'iQuantity',
-   OM_MOMain.cCode  as 'cpoid',OM_MODetails.iVouchRowNo as 'irowno' ,Vendor.cVenAbbName
+   OM_MOMain.cCode  as 'cpoid',OM_MODetails.iVouchRowNo as 'irowno' ,Vendor.cVenAbbName,left(OM_MODetails.cinvCode,3) as 'invClass'
 	into #tbOMmain
 	from OM_MODetails
 	left join OM_MOMain on OM_MODetails.moid=OM_MOMain.moid
@@ -118,19 +118,19 @@ BEGIN
 	and (left(OM_MODetails.cinvCode,3) in(select CinvClass  from #tb_order))
 	order by OM_MODetails.csocode
 	
-	--åˆå¹¶POé‡‡è´­è¡¨ä¸OMå§”å¤–è®¢å•è¡¨ï¼Œå¹¶åˆ†ç»„åˆè®¡æ•°é‡
-   select tbsub.csocode,tbsub.cinvCode,tbsub.cpoid,sum(iQuantity)as 'iQuantity',tbsub.cVenAbbName
+	--ºÏ²¢PO²É¹º±íÓëOMÎ¯Íâ¶©µ¥±í£¬²¢·Ö×éºÏ¼ÆÊıÁ¿
+   select tbsub.csocode,tbsub.cinvCode,tbsub.cpoid,sum(iQuantity)as 'iQuantity',tbsub.cVenAbbName,left(tbsub.cinvCode,3) as 'invClass'
 	into #tbPooMSum
 	from (select * from #tbPOmain
 		  union
 		  select * from #tbOMmain
 		  ) as tbsub
-	group by tbsub.csocode,tbsub.cinvCode,tbsub.cpoid,tbsub.cVenAbbName
+	group by tbsub.csocode,tbsub.cinvCode,tbsub.cpoid,tbsub.cVenAbbName,invClass
 	
-	--select'é‡‡è´­è®¢å•ä¿¡æ¯', * from #tbPooMSum order by csocode,cpoid
+	--select'²É¹º¶©µ¥ĞÅÏ¢', * from #tbPooMSum order by csocode,cpoid
  
 
- --åˆ—å‡ºJOBçš„æœ‰é—œæ–™ä»¶(ä»¥JOBå·æŸ¥æ‰¾,åŒ…å«æ‰€æœ‰å·²ç¶“å‡ºPOå–®çš„æ–™ä»¶,åŒæ—¶,åŠ ä¸ŠæœºèŠ¯)
+ --ÁĞ³öJOBµÄÓĞêPÁÏ¼ş(ÒÔJOBºÅ²éÕÒ,°üº¬ËùÓĞÒÑ½›³öPO†ÎµÄÁÏ¼ş,Í¬Ê±,¼ÓÉÏ»úĞ¾)
 	select OrderNum as 'jobNum',ChildInvCode as 'cinvcode' ,ChildName as 'cinvName',left(ChildInvCode,3) as 'classtype',sortNum  as 'sortNum'
 	into #tbJobInvcode
 	from #tbPMCmainSubAndBom 
@@ -141,11 +141,11 @@ BEGIN
 		left join Inventory on	#tbPooMSum.cinvCode=Inventory.cInvCode
 		join #tb_order on left(#tbPooMSum.cinvCode,3)=#tb_order.CinvClass
 
-	--select 'è¨‚å–®æ‰€ç”¨æ–™è™Ÿ', * from  #tbJobInvcode
+	--select 'Ó††ÎËùÓÃÁÏÌ–', * from  #tbJobInvcode
 	--left join #tb_order on #tbJobInvcode.classtype=#tb_order.CinvClass 
 	--order by jobNum,#tb_order.sortNum 
 
-	--æ¸…ç©ºä¸¦å¡«å……jobè™Ÿèˆ‡ç›¸é—œæ–™è™Ÿé—œé€£è¡¨,ç­‰åŒäºBOMè¡¨
+	--Çå¿ÕKÌî³äjobÌ–ÅcÏàêPÁÏÌ–êPßB±í,µÈÍ¬ÓÚBOM±í
 	truncate table #tbPMCmainSubAndBom
 
 	insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
@@ -154,10 +154,10 @@ BEGIN
 	 right join #tbJobInvcode on  #tbPMCmainSub.OrderNum=#tbJobInvcode.jobNum
 	 order by #tbPMCmainSub.OrderNum,#tbJobInvcode.sortNum
 
-	-- select 'jobèˆ‡æ–™è™Ÿ',* from  #tbPMCmainSubAndBom
+  --select 'jobÅcÁÏÌ–',* from  #tbPMCmainSubAndBom
 
 
- --æŒ‰é‡‡è´­è®¢å•/å§”å¤–è®¢å•+æ–™å·åˆ—å‡º åˆ°è´§æ•°é‡0,é€€è´·æ•°é‡1æ‹’æ”¶æ•°é‡2ï¼Œï¼ˆibilltypeï¼‰ ï¼Œ
+ --°´²É¹º¶©µ¥/Î¯Íâ¶©µ¥+ÁÏºÅÁĞ³ö µ½»õÊıÁ¿0,ÍË´ûÊıÁ¿1¾ÜÊÕÊıÁ¿2£¬£¨ibilltype£© £¬
 	select a4.cordercode,b4.ccode,a4.cinvCode,a4.iquantity,b4.ibilltype
 	into #tbArr
 	from  PU_ArrivalVouchs a4
@@ -166,20 +166,20 @@ BEGIN
 	and (a4.cordercode in (select distinct cpoid from #tbPooMSum ))
 	order by a4.cordercode
 	
-	 --select 'åˆ°è´§å•ä¿¡æ¯',* from  #tbArr
+	 --select 'µ½»õµ¥ĞÅÏ¢',* from  #tbArr
 
-	 --æŒ‰é‡‡è´­è®¢å•+æ–™å·åˆ—å‡ºé‡‡è´­å…¥åº“æ•°é‡
-	select a5.csocode,a5.cPOID,a5.cinvCode,a5.iquantity,b5.cCode  ---é”€å”®è®¢å•ã€POã€æ–™å·ã€æ•°é‡ã€å…¥åº“å•å·
+	 --°´²É¹º¶©µ¥+ÁÏºÅÁĞ³ö²É¹ºÈë¿âÊıÁ¿
+	select a5.csocode,a5.cPOID,a5.cinvCode,a5.iquantity,b5.cCode  ---ÏúÊÛ¶©µ¥¡¢PO¡¢ÁÏºÅ¡¢ÊıÁ¿¡¢Èë¿âµ¥ºÅ
 	into #tbRd
 	from  RdRecords01 a5
 	left join RdRecord01 b5  on a5.ID=b5.ID
 	where (a5.cPOID  in (select distinct cpoid from #tbPooMSum))
 	and  (left(a5.cinvCode,3)  in (select CinvClass  from #tb_order))
 	
- --select 'é‡‡è´­å…¥åº“ä¿¡æ¯',* from  #tbRd
+ --select '²É¹ºÈë¿âĞÅÏ¢',* from  #tbRd
 	
-	--åˆ—å‡ºç”Ÿäº§è®¢å•ä¿¡æ¯
-	--å–è¡¨å¤´å®šä¹‰æœ‰JOBå·(æœŸåˆéƒ¨åˆ†)
+	--ÁĞ³öÉú²ú¶©µ¥ĞÅÏ¢
+	--È¡±íÍ·¶¨ÒåÓĞJOBºÅ(ÆÚ³õ²¿·Ö)
 	select b6.define2 as 'socode',a6.invCode,a6.Qty,b6.MoCode,b6.CreateDate
 	into #tbRD01
 	from mom_orderdetail  a6
@@ -187,7 +187,7 @@ BEGIN
 	where (b6.define2 in (select cSocode from #temptb1))
 	and (a6.invCode like 'D_%' or a6.invCode like 'S_%')
 
- --å–éœ€æ±‚è·Ÿè¸ªå·åŒ…å«æœ‰JOBå·
+ --È¡ĞèÇó¸ú×ÙºÅ°üº¬ÓĞJOBºÅ
  	select a6.SoCode as 'socode',a6.invCode,a6.Qty,b6.MoCode,b6.CreateDate
 	into #tbRD02
 	from mom_orderdetail  a6
@@ -195,16 +195,16 @@ BEGIN
 	where (a6.SoCode in (select cSocode from #temptb1))
 	and (a6.invCode like 'D_%' or a6.invCode like 'S_%')
 	
- --åˆå¹¶RDç”Ÿäº§è®¢å•è¡¨
+ --ºÏ²¢RDÉú²ú¶©µ¥±í
    select tbRd.* 
 	into #tbRDsub
 	from  (select * from  #tbRD01
 	union
 	select * from  #tbRD02) as tbRd
 	
- --select 'ç”Ÿäº§è®¢å•', * from #tbRDsub
+ --select 'Éú²ú¶©µ¥', * from #tbRDsub
  
-	--äº§æˆå“å…¥åº“ä¿¡æ¯
+	--²ú³ÉÆ·Èë¿âĞÅÏ¢
 	select a7.cmocode,a7.cinvCode,a7.iquantity,b7.cCode
 	into #rdrecordin
 	from rdrecords10 a7
@@ -212,9 +212,9 @@ BEGIN
 	where a7.cmocode in(select MoCode from #tbRDsub)
 	and (a7.cinvCode like 'D_%' or a7.cinvCode like 'S_%')
 
- --select 'äº§æˆå“å…¥åº“ä¿¡æ¯',* from #rdrecordin
+ --select '²ú³ÉÆ·Èë¿âĞÅÏ¢',* from #rdrecordin
 
-  --é”€å”®è®¢å•å‘ç¥¨
+  --ÏúÊÛ¶©µ¥·¢Æ±
 	select a8.cordercode,a8.iorderrowno,a8.cinvCode,a8.iquantity,b8.cSBVCode,a8.irowno,b8.dDate 
 	into #tbSaleBillVouchSub
 	from SaleBillVouchs a8
@@ -223,9 +223,9 @@ BEGIN
 	and (a8.cinvCode like 'D_%' or a8.cinvCode like 'S_%')
 	order by b8.cSBVCode,a8.irowno
 	
-  --select 'é”€å”®è®¢å•å‘ç¥¨ä¿¡æ¯',* from #tbSaleBillVouchSub order by cordercode
+  --select 'ÏúÊÛ¶©µ¥·¢Æ±ĞÅÏ¢',* from #tbSaleBillVouchSub order by cordercode
  
- --äº§æˆå“é”€å”®å‡ºåº“ä¿¡æ¯
+ --²ú³ÉÆ·ÏúÊÛ³ö¿âĞÅÏ¢
 	 select a9.iordercode,a9.cInvCode,a9.iquantity,b9.cCode,b9.dDate
 	 into #tbrdrecords
 	 from rdrecords32 a9
@@ -233,9 +233,9 @@ BEGIN
 	 where a9.iordercode in (select cSocode from #temptb1)
 	 order by a9.iordercode
  
-	--select 'é”€å”®è®¢å•èµ°è´§ä¿¡æ¯',* from #tbrdrecords order by iordercode
+	--select 'ÏúÊÛ¶©µ¥×ß»õĞÅÏ¢',* from #tbrdrecords order by iordercode
   
- --åˆ›å»ºç»“æœè¡¨
+ --´´½¨½á¹û±í
 
 	 CREATE TABLE #tbResult(
 		 ID [int] IDENTITY(1,1) NOT NULL,
@@ -288,7 +288,7 @@ BEGIN
 		 SaleBillRecord [varchar](max) NULL
 	)
 
- ----æ’å…¥ä¸»è¡¨ä¿¡æ¯ï¼é”€å”®è®¢å•è¡¨ä½“è¡Œä¿¡æ¯
+	----²åÈëÖ÷±íĞÅÏ¢£­ÏúÊÛ¶©µ¥±íÌåĞĞĞÅÏ¢
 	insert into #tbResult(RowType,OrderDate,JobDate,ShipDate,CountryCode,ShipWhere,SapNO,KePoNum,Custumer,
 			SaleType,TeamName,SoType,OrderNum,RowNo,InvCode,SkuNO,Modle,MoveMent,DiZi,ShipWay,OrderQuantity,KPQuantity,
 			ParentInvCode,ChildInvCode,InvName,StockLock,StockFree,Venter,PoNum,PoQuantity,ArrQuantitySum,ArrReturSum,RdInStoreSum,RdUninSum,ArrDate,
@@ -305,11 +305,13 @@ BEGIN
 		from #tbPMCmain
 
 				
- ---æ’å…¥JOBå„è¡Œæ±‡æ€»è¡¨,JOB+æ–™å·åˆ†ç»„ç»Ÿè®¡,
+ ---²åÈëJOB¸÷ĞĞ»ã×Ü±í,JOB+ÁÏºÅ·Ö×éÍ³¼Æ,
 	 declare @orderdate date ,@custumer nvarchar(100)
 	 declare @jobNum varchar(20),@invCode varchar(30),@iROWnum int
 	 declare @jobNum2 varchar(20),@invCode2 varchar(30)
 	 declare @QuantitySum int
+	 declare @childInvcode varchar(20)
+	 declare @childInvName Nvarchar(100)
 	 declare my_cursor cursor for
 			select distinct OrderNum,InvCode from #tbPMCmain  
 	 open my_cursor
@@ -321,32 +323,69 @@ BEGIN
 	 begin
 	    if not ( @jobNum2=@jobNum and @invCode2=@invCode  )
 		 begin
-		      --è®¢å•å·,äº§å“æ–™å·,sum(è®¢å•é‡)as è®¢å•æ•°é‡
-		    select @QuantitySum =isnull(OrderQuantity,0) from #tbPMCmainSub where OrderNum=@jobNum2 and InvCode=@invCode2
-			 select top 1 @orderdate = kk.OrderDate,@custumer = kk.Custumer 
-			 from #tbPMCmain as kk where OrderNum=@jobNum2 and InvCode=@invCode2 and RowType=1
+			
+				--¶©µ¥ºÅ,²úÆ·ÁÏºÅ,sum(¶©µ¥Á¿)as ¶©µ¥ÊıÁ¿
+				select @QuantitySum =isnull(OrderQuantity,0) from #tbPMCmainSub where OrderNum=@jobNum2 and InvCode=@invCode2
+				select top 1 @orderdate = kk.OrderDate,@custumer = kk.Custumer 
+				from #tbPMCmain as kk where OrderNum=@jobNum2 and InvCode=@invCode2 and RowType=1
 
-			 insert into #tbResult(RowType,OrderDate,ShipDate,ShipWhere,SapNO,kePoNum,Custumer,
-			 SaleType,TeamName,SoType,OrderNum,RowNo,InvCode,SkuNO,Modle,MoveMent,DiZi,ShipWay,OrderQuantity,KPQuantity,
-			 ParentInvCode,ChildInvCode,InvName,StockLock,StockFree,Venter,PoNum,PoQuantity,ArrQuantitySum,ArrReturSum,RdInStoreSum,RdUninSum,ArrDate,
-			 MDorderDate,MDorderNum,MDordeQuantity,
-			 Qcdate,Qcquantity,QCpassQuantity,QcreturnQuantity,FinishedGoodSum,
-			 UnshipQuantity,ShipedQuantity,ShipRecord,
-			 SaleBillRecord)
-			 select  2,@orderdate,null,'','','',@custumer,
-			 '','','',@jobNum2,'99',@invCode2,'','','','','',@QuantitySum,'',
-			 ParentInvCode,ChildInvCode,ChildName,'','','','','','','','','',NULL,
-			 NULL,'','',
-			 NULL,'','','','',
-			 '','','',
-			 ''
-			 from #tbPMCmainSubAndBom
-			 where #tbPMCmainSubAndBom.OrderNum=@jobNum2 and #tbPMCmainSubAndBom.InvCode=@invCode2
-			 order by #tbPMCmainSubAndBom.sortNum
+				--²åÈëÆß´óÅä¼ş
+				if not EXISTS(select * from #tbPMCmainSubAndBom 
+							where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='601' or left(ChildInvCode,3)='607' ))
+				insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+				values(@jobNum,@invCode,@QuantitySum,'2-¿Ç','-','',2)
+				
+			   if not EXISTS(select * from #tbPMCmainSubAndBom 
+							where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='605') )
+				insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+				values(@jobNum,@invCode,@QuantitySum,'3-Ãæ','-','',3)
 
-			 set @jobNum2=@jobNum
-			 set @invCode2=@invCode
+				if not EXISTS(select * from #tbPMCmainSubAndBom 
+							where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='603') )
+				insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+				values(@jobNum,@invCode,@QuantitySum,'4-Õë','-','',4)
 
+				if not EXISTS(select * from #tbPMCmainSubAndBom 
+							where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='617') )
+				insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+				values(@jobNum,@invCode,@QuantitySum,'5-°ÍµÄ','-','',5)
+
+				if not EXISTS(select * from #tbPMCmainSubAndBom 
+							where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='602' or left(ChildInvCode,3)='619' 
+							or left(ChildInvCode,3)='622' or left(ChildInvCode,3)='658' or left(ChildInvCode,3)='621' or left(ChildInvCode,3)='623') )
+				insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+				values(@jobNum,@invCode,@QuantitySum,'6-§','-','',6)
+
+				if not EXISTS(select * from #tbPMCmainSubAndBom 
+							where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='606'  or left(ChildInvCode,3)='620' ) )
+				insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+				values(@jobNum,@invCode,@QuantitySum,'7-¿Û','-','',7)
+
+				if not EXISTS(select * from #tbPMCmainSubAndBom 
+							where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='609') )
+				insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum)
+				values(@jobNum,@invCode,@QuantitySum,'8-µ×Éw','-','',8)
+	
+				insert into #tbResult(RowType,OrderDate,ShipDate,ShipWhere,SapNO,kePoNum,Custumer,
+				SaleType,TeamName,SoType,OrderNum,RowNo,InvCode,SkuNO,Modle,MoveMent,DiZi,ShipWay,OrderQuantity,KPQuantity,
+				ParentInvCode,ChildInvCode,InvName,StockLock,StockFree,Venter,PoNum,PoQuantity,ArrQuantitySum,ArrReturSum,RdInStoreSum,RdUninSum,ArrDate,
+				MDorderDate,MDorderNum,MDordeQuantity,
+				Qcdate,Qcquantity,QCpassQuantity,QcreturnQuantity,FinishedGoodSum,
+				UnshipQuantity,ShipedQuantity,ShipRecord,
+				SaleBillRecord)
+				select  2,@orderdate,null,'','','',@custumer,
+				'','','',@jobNum2,'99',@invCode2,'','','','','',@QuantitySum,'',
+				ParentInvCode,ChildInvCode,ChildName,'','','','','','','','','',NULL,
+				NULL,'','',
+				NULL,'','','','',
+				'','','',
+				''
+				from #tbPMCmainSubAndBom
+				where #tbPMCmainSubAndBom.OrderNum=@jobNum2 and #tbPMCmainSubAndBom.InvCode=@invCode2
+				order by  #tbPMCmainSubAndBom.sortNum
+
+				 set @jobNum2=@jobNum
+				 set @invCode2=@invCode
 			end
 		fetch next from my_cursor into @jobNum, @invCode
 	end
@@ -354,7 +393,8 @@ BEGIN
 	deallocate my_cursor
 
 
- --æ›´æ–°é‡‡è´­ä¿¡æ¯
+
+ --¸üĞÂ²É¹ºĞÅÏ¢
 		update #tbResult set Venter=isnull(#tbPooMSum.cVenAbbName,''),
 			PoNum=isnull(#tbPooMSum.cPOID,''),
 			PoQuantity=isnull(#tbPooMSum.iQuantity,0),
@@ -383,12 +423,12 @@ BEGIN
 	where #tbResult.RowType=2
 		
 				 
- --å–æœ€å°çš„ID,å®šä½æ’å…¥ç”Ÿäº§è®¢å•çš„ä½ç½®
+ --È¡×îĞ¡µÄID,¶¨Î»²åÈëÉú²ú¶©µ¥µÄÎ»ÖÃ
 	select min(id) as 'minid', OrderNum,InvCode into #tbidsub 
 	from #tbResult where #tbResult.RowType=2 
 	group by #tbResult.OrderNum,#tbResult.InvCode
 
- --æ•°æ®ä¸´æ—¶è¡¨,å­˜æ”¾ç”Ÿäº§è®¢å•è®°å½•ï¼Œå¹¶ä»¥IDå·ä½œæ ‡è®°
+ --Êı¾İÁÙÊ±±í,´æ·ÅÉú²ú¶©µ¥¼ÇÂ¼£¬²¢ÒÔIDºÅ×÷±ê¼Ç
    create table #tbRdrecord2
 	(
 	 id bigint,
@@ -400,10 +440,10 @@ BEGIN
 	  )
 
 
- declare @MinId bigint ,@RdNum varchar(20),@RdQuantity int,@Rddate datetime  --ç”Ÿäº§è®¢å•å·ï¼Œæ•°é‡
- declare @Reflowid int --ç”Ÿäº§è®¢å•è¡Œè®°å½•å·
+ declare @MinId bigint ,@RdNum varchar(20),@RdQuantity int,@Rddate datetime  --Éú²ú¶©µ¥ºÅ£¬ÊıÁ¿
+ declare @Reflowid int --Éú²ú¶©µ¥ĞĞ¼ÇÂ¼ºÅ
  
- --æŸ¥å‡ºæ‰€æœ‰é”€å”®è®¢å•çš„ç”Ÿäº§è®¢å•
+ --²é³öËùÓĞÏúÊÛ¶©µ¥µÄÉú²ú¶©µ¥
    declare cursor2 cursor for
 		select minid,OrderNum,InvCode from #tbidsub
 
@@ -411,7 +451,7 @@ BEGIN
 	fetch next from cursor2 into @MinId,@jobNum,@invCode
 	while @@FETCH_STATUS = 0
 	begin
-			--LOOPå†…
+			--LOOPÄÚ
 		   set @Reflowid=0
 			declare cursor3 cursor for
 			    select MoCode,Qty,CreateDate from #tbRDsub where #tbRDsub.socode=@jobNum and invCode=@invCode
@@ -436,7 +476,7 @@ BEGIN
 	deallocate cursor2
 
 
- --æ›´æ–°ç”Ÿäº§è®¢å•
+ --¸üĞÂÉú²ú¶©µ¥
  
 	 update #tbResult set MDorderDate=isnull(#tbRdrecord2.Rddate,''),
 		 MDorderNum=isnull(#tbRdrecord2.Rdnum,''),
@@ -447,7 +487,7 @@ BEGIN
 	 and #tbResult.RowType=2
  
 
- ----æ•°æ®ä¸´æ—¶è¡¨,å­˜æ”¾é”€å”®å‡ºåº“è®°å½•ï¼Œå¹¶ä»¥IDå·ä½œæ ‡è®°
+ ----Êı¾İÁÙÊ±±í,´æ·ÅÏúÊÛ³ö¿â¼ÇÂ¼£¬²¢ÒÔIDºÅ×÷±ê¼Ç
    create table #tbRdrecord3
 	(
 	 jobno varchar(20),
@@ -456,7 +496,7 @@ BEGIN
 	  )
 
 
-	--æå–é”€å”®å‡ºåº“ä¿¡æ¯,å¹¶è¡Œè½¬åˆ—--æ¨ªæ’æ˜¾ç¤º
+	--ÌáÈ¡ÏúÊÛ³ö¿âĞÅÏ¢,²¢ĞĞ×ªÁĞ--ºáÅÅÏÔÊ¾
 	declare @strRecord varchar(2000)
 	declare cursor2 cursor for
 			select DISTINCT  iordercode,cInvCode 	from #tbrdrecords group by iordercode,cInvCode
@@ -465,7 +505,7 @@ BEGIN
 	fetch next from cursor2 into @jobNum,@invCode
 	while @@FETCH_STATUS = 0
 	begin
-			--LOOPå†…
+			--LOOPÄÚ
 			set @strRecord =''
 			declare cursor3 cursor for
 			    select cCode,iquantity,dDate from #tbrdrecords where #tbrdrecords.iordercode=@jobNum and cInvCode=@invCode order by  dDate desc
@@ -473,7 +513,7 @@ BEGIN
 			fetch next from cursor3 into @RdNum,@RdQuantity,@Rddate
 			while @@FETCH_STATUS = 0
 			begin
-			    set @strRecord= stuff(', ; '+@strRecord, 1, 1, 'å•å·:'+@RdNum+'  æ•°é‡:'+cast(@RdQuantity as varchar(10))+' å‡ºåº“æ—¥æœŸ:'+Convert(varchar(10),@Rddate,23))
+			    set @strRecord= stuff(', ; '+@strRecord, 1, 1, 'µ¥ºÅ:'+@RdNum+'  ÊıÁ¿:'+cast(@RdQuantity as varchar(10))+' ³ö¿âÈÕÆÚ:'+Convert(varchar(10),@Rddate,23))
 
 				fetch next from cursor3 into @RdNum,@RdQuantity,@Rddate
 			end
@@ -489,7 +529,7 @@ BEGIN
 	close cursor2
 	deallocate cursor2
 
-  ---æ›´æ–°èµ°è´§ä¿¡æ¯è®°å½•
+  ---¸üĞÂ×ß»õĞÅÏ¢¼ÇÂ¼
 	update #tbResult set shiprecord=#tbRdrecord3.Rdrecodes
 	from #tbResult
 	join #tbRdrecord3 on( #tbResult.OrderNum=#tbRdrecord3.jobno and  #tbResult.InvCode=#tbRdrecord3.invcode)
@@ -498,14 +538,14 @@ BEGIN
 	
 	--=========================
 	truncate table #tbRdrecord3
-	--æå–å¼€ç¥¨ä¿¡æ¯,å¹¶è¡Œè½¬åˆ—--æ¨ªæ’æ˜¾ç¤º
+	--ÌáÈ¡¿ªÆ±ĞÅÏ¢,²¢ĞĞ×ªÁĞ--ºáÅÅÏÔÊ¾
 	declare cursor2 cursor for
 			select DISTINCT  cordercode,cinvCode 	from #tbSaleBillVouchSub group by cordercode,cinvCode
 	open cursor2
 	fetch next from cursor2 into @jobNum,@invCode
 	while @@FETCH_STATUS = 0
 	begin
-			--LOOPå†…
+			--LOOPÄÚ
 			set @strRecord =''
 			declare cursor3 cursor for
 			    select cSBVCode,iquantity,dDate from #tbSaleBillVouchSub where #tbSaleBillVouchSub.cordercode=@jobNum and cinvCode=@invCode order by  dDate desc
@@ -513,7 +553,7 @@ BEGIN
 			fetch next from cursor3 into @RdNum,@RdQuantity,@Rddate
 			while @@FETCH_STATUS = 0
 			begin
-			    set @strRecord= stuff(', ; '+@strRecord, 1, 1, 'å•å·:'+@RdNum+'  æ•°é‡:'+cast(@RdQuantity as varchar(10))+' æ—¥æœŸ:'+Convert(varchar(10),@Rddate,23))
+			    set @strRecord= stuff(', ; '+@strRecord, 1, 1, 'µ¥ºÅ:'+@RdNum+'  ÊıÁ¿:'+cast(@RdQuantity as varchar(10))+' ÈÕÆÚ:'+Convert(varchar(10),@Rddate,23))
 
 				fetch next from cursor3 into @RdNum,@RdQuantity,@Rddate
 			end
@@ -529,24 +569,24 @@ BEGIN
 	close cursor2
 	deallocate cursor2
 
-  ---æ›´æ–°å‘ç¥¨ä¿¡æ¯è®°å½•
+  ---¸üĞÂ·¢Æ±ĞÅÏ¢¼ÇÂ¼
 	update #tbResult set saleBillrecord=#tbRdrecord3.Rdrecodes
 	from #tbResult
 	join #tbRdrecord3 on( #tbResult.OrderNum=#tbRdrecord3.jobno and  #tbResult.InvCode=#tbRdrecord3.invcode)
 	join #tbidsub on (#tbResult.OrderNum=#tbidsub.OrderNum and #tbResult.InvCode=#tbidsub.InvCode and #tbResult.ID= #tbidsub.minid)
 	where #tbResult.RowType=2
 
-  --æ›´æ–°åº“å­˜é‡/è‡ªç”±åº“å­˜é‡
-  --step1,å–å‡ºè‡ªç”±åº“å­˜
+  --¸üĞÂ¿â´æÁ¿/×ÔÓÉ¿â´æÁ¿
+  --step1,È¡³ö×ÔÓÉ¿â´æ
 	select cInvCode,sum(iQuantity)as 'iQuantity' 
 	into #StockFree	
 	from CurrentStock
-	where  cWhCode in('03','04','06','07','08','14','21')     --æ’é™¤æŠ¥åºŸåº“å­˜é‡
+	where  cWhCode in('03','04','06','07','08','14','21')     --ÅÅ³ı±¨·Ï¿â´æÁ¿
 	and len(iSodid)=0
 	and isnull(iQuantity,0) > 0
 	group by cInvCode
 	
-	--Step2,å–å‡ºè®¢å•ç»‘å®šçš„åº“å­˜é‡
+	--Step2,È¡³ö¶©µ¥°ó¶¨µÄ¿â´æÁ¿
 	select iSodid,cInvCode,sum(iQuantity)  as 'iQuantity'
 	into #StockLock  	
 	from CurrentStock
@@ -555,27 +595,43 @@ BEGIN
 	and isnull(iQuantity,0) > 0
 	group by iSodid,cInvCode
 
-	--æ›´æ–°æ•°æ®-ç»‘å®šçš„åº“å­˜
+	--¸üĞÂÊı¾İ-°ó¶¨µÄ¿â´æ
 	update #tbResult 
 			set StockLock=#StockLock.iQuantity
 	from #tbResult	
 	join #StockLock on #tbResult.OrderNum = #StockLock.iSodid and #tbResult.ChildInvCode = #StockLock.cInvCode
 	where #tbResult.RowType=2
 
-	--æ›´æ–°æ•°æ®-è‡ªç”±åº“å­˜
+	--¸üĞÂÊı¾İ-×ÔÓÉ¿â´æ
 	update #tbResult 
 			set  StockFree=#StockFree.iQuantity
 	from #tbResult join  #StockFree	on  #tbResult.ChildInvCode = #StockFree.cInvCode
 	where #tbResult.RowType=2
 
-	--åˆ—å‡ºD_GENERALæ–™è™Ÿçš„å‚™è¨»èªªæ˜
+	--ÁĞ³öD_GENERALÁÏÌ–µÄ‚äÔ]ÕfÃ÷
 	update #tbResult set #tbResult.InvName=SO_SODetails.cMemo
 	from #tbResult 
 	join SO_SODetails on(#tbResult.OrderNum=SO_SODetails.csocode and #tbResult.RowNo=SO_SODetails.iRowNo )
 	where #tbResult.RowType=1 and #tbResult.InvCode='D_GENERAL'
 
- --æŸ¥è¯¢æ˜¾ç¤ºç»“æœè¡Œ
- select * from #tbResult  order by OrderNum,RowNo,InvCode  desc
+	--ÌáÈ¡ÁÏ¼ş·ÖÀàÃû³Æ,Ìî³ä
+	update #tbResult 
+			set #tbResult.ParentInvCode=(
+				CASE WHEN (left(ChildInvCode,3) = '604' ) THEN '1-™CĞ¾'
+				WHEN (left(ChildInvCode,3) = '601' or left(ChildInvCode,3) = '607' ) THEN '2-š¤'
+				WHEN (left(ChildInvCode,3) = '605' ) THEN '3-Ãæ'
+				WHEN (left(ChildInvCode,3) = '603' ) THEN '4-á˜'
+				WHEN (left(ChildInvCode,3) = '617' ) THEN '5-°ÍµÄ'
+				WHEN (left(ChildInvCode,3) = '602' or left(ChildInvCode,3) = '619' or left(ChildInvCode,3) = '622'
+								or left(ChildInvCode,3) = '658' or left(ChildInvCode,3)='621' or left(ChildInvCode,3) = '623') THEN '6-§'
+				WHEN (left(ChildInvCode,3) = '606' or left(ChildInvCode,3) = '620' ) THEN '7-¿Û'
+				WHEN (left(ChildInvCode,3) = '609' ) THEN '8-µ×Éw'
+				ELSE '' END)
+	from #tbResult 
+	where #tbResult.RowType=2 and #tbResult.ChildInvCode like '6%'
+
+ --²éÑ¯ÏÔÊ¾½á¹ûĞĞ
+ select * from #tbResult  order by OrderNum,RowNo,ParentInvCode
 
 SET NOCOUNT OFF
 
