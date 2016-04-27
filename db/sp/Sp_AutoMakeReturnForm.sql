@@ -1,3 +1,4 @@
+
 /*
 
 從SQL Profiler取得的SQL, 001 拒收單: AP16033322
@@ -6,16 +7,25 @@
 -- 新增拒收單表頭 (1000016913)
 if not exists (select ccode from PU_ArrivalVouch where id=N'1000016913')
 Insert Into PU_ArrivalVouch(ivtid,id,ccode,cptcode,ddate,cvencode,cdepcode,cpersoncode,cpaycode,csccode,cexch_name,iexchrate,itaxrate,cmemo,cbustype,cmaker,bnegative,cdefine1,cdefine2,cdefine3,cdefine4,cdefine5,cdefine6,cdefine7,cdefine8,cdefine9,cdefine1
+
 0,cdefine11,cdefine12,cdefine13,cdefine14,cdefine15,cdefine16,ccloser,idiscounttaxtype,ibilltype,cvouchtype,cgeneralordercode,ctmcode,cincotermcode,ctransordercode,dportdate,csportcode,caportcode,csvencode,carrivalplace,dclosedate,idec,bcal,guid,iverifyst
+
 ate,cauditdate,cverifier,iverifystateex,ireturncount,iswfcontrolled,cvenpuomprotocol,cchanger,iflowid,ccleanver,cpocode,csysbarcode,ccurrentauditor) Values (8169,1000016913,N'AP16033322',N'01','2016-03-10',N'245',N'34',NULL,N'01',NULL,N'港币',1,0,N'所有材质跟做开大
+
 货，物料全部交物流部仓!',N'普通采购',N'Jason Ching',1,N'AAA',N' ST151107/1108',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,0,NUL
+
 L,NULL,NULL,NULL)
 
 Insert Into PU_ArrivalVouch_ExtraDefine(id,chdefine3,chdefine11,chdefine13,chdefine16,chdefine19,chdefine23) Values (1000016913,NULL,NULL,NULL,NULL,NULL,NULL)
 
 -- 更新到貨單表體 (1000035068)
 UPDATE Pu_ArrivalVouchs 
-SET Pu_ArrivalVouchs.fsumrefusequantity=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))+ABS(CONVERT(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.frefusequantity=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))+ABS(CONVERT(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.fValidQuantity=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.iQuantity,0))-CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))-ABS(CONVERT(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.fRealQuantity=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.iQuantity,0))-CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))-ABS(CONVERT(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.fsumrefusenum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))+ABS(CONVERT(DECIMAL(20,7),-.012)), Pu_ArrivalVouchs.fRefuseNum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))+ABS(CONVERT(DECIMAL(20,7),-.012)), Pu_ArrivalVouchs.fValidNum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.iNum,0))-CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))-ABS(CONVERT(DECIMAL(20,7),-.012)), Pu_ArrivalVouchs.fRealnum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.inum,0))-CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))-ABS(CONVERT(DECIMAL(20,7),-.012)) 
+SET Pu_ArrivalVouchs.fsumrefusequantity=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))+ABS(CONVERT(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.frefusequantity=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))+ABS(CONVERT
+(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.fValidQuantity=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.iQuantity,0))-CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))-ABS(CONVERT(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.fRealQuantity=CONVERT(
+DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.iQuantity,0))-CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusequantity,0))-ABS(CONVERT(DECIMAL(20,7),-12)), Pu_ArrivalVouchs.fsumrefusenum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))+ABS(CO
+NVERT(DECIMAL(20,7),-.012)), Pu_ArrivalVouchs.fRefuseNum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))+ABS(CONVERT(DECIMAL(20,7),-.012)), Pu_ArrivalVouchs.fValidNum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.iNum,0))-CONVERT(DECIMAL(2
+0,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))-ABS(CONVERT(DECIMAL(20,7),-.012)), Pu_ArrivalVouchs.fRealnum=CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.inum,0))-CONVERT(DECIMAL(20,7),ISNULL(Pu_ArrivalVouchs.fsumrefusenum,0))-ABS(CONVERT(DECIMAL(20,7),-.
+012)) 
 WHERE Pu_ArrivalVouchs.autoid=1000035068
 
 -- 更新到貨單表體
@@ -28,7 +38,10 @@ Where IsNull(Inventory.igrouptype, 0) = 1 And Pu_ArrivalVouchs.autoid=1000035068
 
 -- 更新採購單表體
 UPDATE Po_Podetails 
-SET Po_Podetails.iArrQTY=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.iArrQTY,0))- ABS( CONVERT(DECIMAL(20,7),-12)),Po_Podetails.iArrNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.iArrNum,0))-ABS(CONVERT(DECIMAL(20,7),-.012)), Po_Podetails.fPoValidQuantity=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoValidQuantity,0))-ABS(CONVERT(DECIMAL(20,7),-12)),Po_Podetails.fPoValidNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoValidNum,0))-ABS(CONVERT(DECIMAL(20,7),-.012)), Po_Podetails.fPoRefuseQuantity=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoRefuseQuantity,0))+ABS(CONVERT(DECIMAL(20,7),-12)),Po_Podetails.fPoRefuseNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoRefuseNum,0))+ABS(CONVERT(DECIMAL(20,7),-.012)), Po_Podetails.iArrMoney=ISNULL(Po_Podetails.iArrMoney,0)-ABS((-4.2)), Po_Podetails.iNatArrMoney=ISNULL(Po_Podetails.iNatArrMoney,0)-ABS((-4.2)) 
+SET Po_Podetails.iArrQTY=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.iArrQTY,0))- ABS( CONVERT(DECIMAL(20,7),-12)),Po_Podetails.iArrNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.iArrNum,0))-ABS(CONVERT(DECIMAL(20,7),-.012)), Po_Podetails.fPoValidQuantity=CO
+NVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoValidQuantity,0))-ABS(CONVERT(DECIMAL(20,7),-12)),Po_Podetails.fPoValidNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoValidNum,0))-ABS(CONVERT(DECIMAL(20,7),-.012)), Po_Podetails.fPoRefuseQuantity=CONVERT(DECIM
+AL(20,7),ISNULL(Po_Podetails.fPoRefuseQuantity,0))+ABS(CONVERT(DECIMAL(20,7),-12)),Po_Podetails.fPoRefuseNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoRefuseNum,0))+ABS(CONVERT(DECIMAL(20,7),-.012)), Po_Podetails.iArrMoney=ISNULL(Po_Podetails.iArrMoney
+,0)-ABS((-4.2)), Po_Podetails.iNatArrMoney=ISNULL(Po_Podetails.iNatArrMoney,0)-ABS((-4.2)) 
 from Po_Podetails 
 inner join Pu_ArrivalVouchs on Po_Podetails.id=Pu_ArrivalVouchs.iposid  
 WHERE Pu_ArrivalVouchs.autoid=1000035068
@@ -42,23 +55,31 @@ WHERE Pu_ArrivalVouchs.autoid=1000035068
 
 -- 新增拒收單表體 (1000035434)
 Insert Into 
-PU_ArrivalVouchs(autoid,id,cwhcode,cinvcode,inum,iquantity,ioricost,ioritaxcost,iorimoney,ioritaxprice,iorisum,icost,imoney,itaxprice,isum,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10,itaxrate,cdefine22,cdefine23,cdefine24,cdefine25,cdefine26,cdefine27,cdefine28,cdefine29,cdefine30,cdefine31,cdefine32,cdefine33,cdefine34,cdefine35,cdefine36,cdefine37,citem_class,citemcode,iposid,citemname,cunitid,fkpquantity,frealquantity,fvalidquantity,finvalidquantity,ccloser,icorid,bgsp,cbatch,dvdate,dpdate,frefusequantity,cgspstate,fvalidnum,finvalidnum,frealnum,btaxcost,binspect,frefusenum,ippartid,ipquantity,iptoseq,sodid,sotype,contractrowguid,imassdate,cmassunit,bexigency,cbcloser,fdtquantity,finvalidinnum,fdegradequantity,fdegradenum,fdegradeinquantity,fdegradeinnum,finspectquantity,finspectnum,iinvmpcost,guids,iinvexchrate,objectid_source,autoid_source,ufts_source,irowno_source,csocode,isorowno,iorderid,cordercode,iorderrowno,dlineclosedate,contractcode,contractrowno,rejectsource,iciqbookid,cciqbookcode,cciqcode,fciqchangrate,irejectautoid,iexpiratdatecalcu,cexpirationdate,dexpirationdate,cupsocode,iorderdid,iordertype,csoordercode,iorderseq,cbatchproperty1,cbatchproperty2,cbatchproperty3,cbatchproperty4,cbatchproperty5,cbatchproperty6,cbatchproperty7,cbatchproperty8,cbatchproperty9,cbatchproperty10,ivouchrowno,irowno,cbmemo,cbsysbarcode,carrivalcode,ipickedquantity,ipickednum,isourcemocode,isourcemodetailsid,freworkquantity,freworknum,fsumreworkquantity,fsumreworknum,iproducttype,cmaininvcode,imainmodetailsid,planlotnumber,bgift) 
-Values (1000035434,1000016913,N'12',N'804_000025',-.012,-12,.35,.35,-4.2,0,-4.2,.35,-4.2,0,-4.2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1000005823,NULL,N'202',NULL,NULL,NULL,NULL,NULL,1000035068,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,N' PO15107968',NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,N'AP16030099',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0)
+PU_ArrivalVouchs(autoid,id,cwhcode,cinvcode,inum,iquantity,ioricost,ioritaxcost,iorimoney,ioritaxprice,iorisum,icost,imoney,itaxprice,isum,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10,itaxrate,cdefine22,cdefine23,cdefine24,cdefin
+e25,cdefine26,cdefine27,cdefine28,cdefine29,cdefine30,cdefine31,cdefine32,cdefine33,cdefine34,cdefine35,cdefine36,cdefine37,citem_class,citemcode,iposid,citemname,cunitid,fkpquantity,frealquantity,fvalidquantity,finvalidquantity,ccloser,icorid,bgsp,cbatch
+,dvdate,dpdate,frefusequantity,cgspstate,fvalidnum,finvalidnum,frealnum,btaxcost,binspect,frefusenum,ippartid,ipquantity,iptoseq,sodid,sotype,contractrowguid,imassdate,cmassunit,bexigency,cbcloser,fdtquantity,finvalidinnum,fdegradequantity,fdegradenum,fde
+gradeinquantity,fdegradeinnum,finspectquantity,finspectnum,iinvmpcost,guids,iinvexchrate,objectid_source,autoid_source,ufts_source,irowno_source,csocode,isorowno,iorderid,cordercode,iorderrowno,dlineclosedate,contractcode,contractrowno,rejectsource,iciqbo
+okid,cciqbookcode,cciqcode,fciqchangrate,irejectautoid,iexpiratdatecalcu,cexpirationdate,dexpirationdate,cupsocode,iorderdid,iordertype,csoordercode,iorderseq,cbatchproperty1,cbatchproperty2,cbatchproperty3,cbatchproperty4,cbatchproperty5,cbatchproperty6,
+cbatchproperty7,cbatchproperty8,cbatchproperty9,cbatchproperty10,ivouchrowno,irowno,cbmemo,cbsysbarcode,carrivalcode,ipickedquantity,ipickednum,isourcemocode,isourcemodetailsid,freworkquantity,freworknum,fsumreworkquantity,fsumreworknum,iproducttype,cmain
+invcode,imainmodetailsid,planlotnumber,bgift) 
+Values (1000035434,1000016913,N'12',N'804_000025',-.012,-12,.35,.35,-4.2,0,-4.2,.35,-4.2,0,-4.2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1000005823,NULL,N
+'202',NULL,NULL,NULL,NULL,NULL,1000035068,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,N' PO15107968',NULL,NULL,
+NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,N'AP16030099',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0)
 
 Insert Into PU_ArrivalVouchs_ExtraDefine(autoid,cbdefine3,cbdefine4,cbdefine1,cbdefine2,cbdefine8,cbdefine9,cbdefine11,cbdefine15,cbdefine18,cbdefine21,cbdefine23) Values (1000035434,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)
 */
 
 
-ALTER  proc [dbo].[sp_AutoMakeReturnForm]
+alter  proc [dbo].[sp_AutoMakeReturnForm]
 /*
 功能：依采购入库单上的拒收数量，
 		自动开到货拒收单据，单据号
 		形如：AP16013293_RT
 调用：在采购入单保存新增时，自动触发执行
-		exec sp_AutoMakeReturnForm 'WPI16030744',1
+		exec sp_AutoMakeReturnForm 'WPI16040336',1
 作者：jams
 */
-@formNO varchar(30) null, --採購入庫單號
+@formNO varchar(30)= null, --採購入庫單號
 @debug int=0 --是1否0测试
 as 
 begin
@@ -83,7 +104,6 @@ begin
 	and cCode = isnull(@formNO, cCode)
 	and not exists (select 1 from AutoReturnMapping where RdsAutoId = d.AutoId)
 
-
 	if @debug > 0
 	begin
 		select  '#tb', *
@@ -101,7 +121,7 @@ begin
 	begin
 
 		-- Get the ID
-		exec sp_GetId '','004','PuArrival',@irowcount,@ifatherid output,@ichild output,default
+		exec sp_GetId '','001','PuArrival',@irowcount,@ifatherid output,@ichild output,default
 		
 		select 'Id', @irowcount as count, @ifatherid as father, @ichild as child   
 	
@@ -219,6 +239,23 @@ begin
 			from Po_Podetails 
 			inner join Pu_ArrivalVouchs on Po_Podetails.id=Pu_ArrivalVouchs.iposid  
 			WHERE Pu_ArrivalVouchs.autoid=@ArvRowid
+
+			--如果到货单来源是委外订单,修改委外订单的到货数量.
+			if EXISTS (select * from Pu_ArrivalVouchs where  Pu_ArrivalVouchs.autoid=@ArvRowid　and cbsysbarcode like '%om%'　)
+			begin
+				 UPDATE om_modetails 
+				 SET om_modetails.iArrQTY=CONVERT(DECIMAL(20,7),ISNULL(om_modetails.iArrQTY,0))- @detailQuantity,　		--累计到货数量
+				 om_modetails.iArrNum=CONVERT(DECIMAL(20,7),ISNULL(om_modetails.iArrNum,0))-@detailNum,						--累计到货件数 
+				 om_modetails.iArrMoney=isnull(om_modetails.iArrMoney,0)-ABS((om_modetails.iUnitPrice * @ReturnNUM)),		--累计到货金额
+				 om_modetails.iNatArrMoney=ISNULL(om_modetails.iNatArrMoney,0)-ABS((om_modetails.iNatUnitPrice * @ReturnNUM))		--本币到货金额 
+				 from om_modetails inner 
+				 join Pu_ArrivalVouchs on om_modetails.modetailsid=Pu_ArrivalVouchs.iposid  
+				 WHERE Pu_ArrivalVouchs.autoid=@ArvRowid
+         end 
+
+			-- select iNatArrMoney,* from  om_modetails
+
+			--修改已经开出的材料出库单(委外倒冲开出的单据)
 
 			update Pu_ArrivalVouch 
 				set ddate=ddate 
@@ -356,7 +393,7 @@ begin
            ,[csocode]		--job订单号
            ,[isorowno]
            ,[iorderid]
-           ,[cordercode]   --采购订单号
+   ,[cordercode]   --采购订单号
            ,[iorderrowno]
            ,[dlineclosedate]
            ,[ContractCode]
@@ -425,6 +462,3 @@ begin
 	set nocount off
 end
 	
-GO
-
-
