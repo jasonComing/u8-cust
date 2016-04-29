@@ -1,3 +1,4 @@
+--sp_helptext 'Sp_AutoMakeReturnForm'
 
 /*
 
@@ -121,7 +122,7 @@ begin
 	begin
 
 		-- Get the ID
-		exec sp_GetId '','001','PuArrival',@irowcount,@ifatherid output,@ichild output,default
+		exec sp_GetId '','004','PuArrival',@irowcount,@ifatherid output,@ichild output,default
 		
 		select 'Id', @irowcount as count, @ifatherid as father, @ichild as child   
 	
@@ -226,9 +227,12 @@ begin
 			LEFT JOIN ComputationUnit as Unit1 on Pu_ArrivalVouchs.cunitid=Unit1.cComUnitCode 
 			Where IsNull(Inventory.igrouptype, 0) = 1 And Pu_ArrivalVouchs.autoid=@ArvRowid
 		
+			--如果到货单来源是采购订单,修改采购订单的到货数量.
 			-- 更新採購單表體
-			UPDATE Po_Podetails 
-			SET Po_Podetails.iArrQTY=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.iArrQTY,0))- @detailQuantity,
+			if EXISTS (select * from Pu_ArrivalVouchs where  Pu_ArrivalVouchs.autoid=@ArvRowid　and cbsysbarcode like '%pu%'　)
+			begin
+				UPDATE Po_Podetails 
+				SET Po_Podetails.iArrQTY=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.iArrQTY,0))- @detailQuantity,
 				Po_Podetails.iArrNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.iArrNum,0))-@detailNum,
 				Po_Podetails.fPoValidQuantity=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoValidQuantity,0))-@detailQuantity,
 				Po_Podetails.fPoValidNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoValidNum,0))-@detailNum,
@@ -236,11 +240,13 @@ begin
 				Po_Podetails.fPoRefuseNum=CONVERT(DECIMAL(20,7),ISNULL(Po_Podetails.fPoRefuseNum,0))+@detailNum,
 				Po_Podetails.iArrMoney=ISNULL(Po_Podetails.iArrMoney,0)-ABS((Po_Podetails.iUnitPrice * @ReturnNUM)),  --<<<<<<<<<<<<<<<<<<< where does this 4.2 come from???
 				Po_Podetails.iNatArrMoney=ISNULL(Po_Podetails.iNatArrMoney,0)-ABS((Po_Podetails.iNatUnitPrice * @ReturnNUM))   --<<<<<<<<<<<<<<<<<<<< where does this 4.2 come from???
-			from Po_Podetails 
-			inner join Pu_ArrivalVouchs on Po_Podetails.id=Pu_ArrivalVouchs.iposid  
-			WHERE Pu_ArrivalVouchs.autoid=@ArvRowid
-
+				from Po_Podetails 
+				inner join Pu_ArrivalVouchs on Po_Podetails.id=Pu_ArrivalVouchs.iposid  
+				WHERE Pu_ArrivalVouchs.autoid=@ArvRowid
+			end
+			
 			--如果到货单来源是委外订单,修改委外订单的到货数量.
+			-- 更新委外订单表體
 			if EXISTS (select * from Pu_ArrivalVouchs where  Pu_ArrivalVouchs.autoid=@ArvRowid　and cbsysbarcode like '%om%'　)
 			begin
 				 UPDATE om_modetails 
@@ -253,10 +259,7 @@ begin
 				 WHERE Pu_ArrivalVouchs.autoid=@ArvRowid
          end 
 
-			-- select iNatArrMoney,* from  om_modetails
-
-			--修改已经开出的材料出库单(委外倒冲开出的单据)
-
+			--修改到货单-日期
 			update Pu_ArrivalVouch 
 				set ddate=ddate 
 			from Pu_ArrivalVouch 
