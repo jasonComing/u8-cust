@@ -1,4 +1,4 @@
-create proc SP_AutoFillPodata
+alter proc SP_AutoFillPodata
 /*
 功能：采购员批理生单时，自动补上表头相关必填项，
 		（部门、业务员、付款条件、质量等级-A，建档作废标记－否）
@@ -14,11 +14,6 @@ begin
 	set nocount on
 
 	declare @PoNO  varchar(30)			--采购订单号
-	declare @makerCode varchar(30)　	--制单人工号
-	declare @makerName varchar(50)　	--制单人姓名
-	declare @PersonCode varchar(30)	--业务员代码
-
-	declare @DepCode varchar(30)		--部门代码
 
 	declare @rowcount int				--表体需要加载士啤的行数
 	declare @MaxRowNum int				--表体最大行号
@@ -26,46 +21,33 @@ begin
 	if not exists(select * from PO_Pomain where POID =@poid )
 		return
 
-	--取出cpoid/制单人
-	select  top 1 @makerName=cMaker,@PoNO=cPOID  from  PO_Pomain  where POID =@poid
-
-	select top 1 @PersonCode= p.[cPersonCode],@DepCode=p.[cDepCode]
-	from  [Person] as p
-	left join [Department] as d on  d.[cDepCode] = p.[cDepCode]
-	where  p.cPersonName=@makerName
+	--取出cpoid
+	select  top 1 @PoNO=cPOID  from  PO_Pomain  where POID =@poid
 
 	--变更表头信息
-
 	update PO_POMain
-	set cPTCode ='01',
-		 cdefine1 = 'A',
-		 cPayCode = '01'
-	from  PO_POMain
+	set cPTCode = isnull(cPTCode, '01'),
+		cdefine1 = isnull(cdefine1, 'A'),
+		cPayCode = isnull(cPayCode, '01')
 	where POID =@poid
 
-	update PO_POMain
-	set cDepCode =isnull(@DepCode,null)
-	from  PO_POMain
-	where PO_POMain.cDepCode is null
-	and  POID =@poid
-
-	update PO_POMain
-	set cPersonCode = isnull(@PersonCode,null)
-	from  PO_POMain
-	where PO_POMain.cPersonCode is null
-	and  POID =@poid
-
+	update PO_PoMain
+	set cDepCode = isnull(PO_PoMain.cDepCode, Department.cDepCode),
+		cPersonCode = isnull(PO_PoMain.cPersonCode, Person.cPersonCode)
+	from PO_PoMain
+	join Person on Person.cPersonName = PO_PoMain.cMaker
+	left join Department on Department.cDepCode = Person.cDepCode
+	where PO_PoMain.POID = @poid
 
 	--表头扩展项
 	update PO_POMain_ExtraDefine
 	set chdefine19 = '否'
 	from PO_POMain_ExtraDefine
-	where PO_POMain_ExtraDefine.chdefine19 is null
+	where chdefine19 is null
 	and POID=@poid
 
 
 	--====以下为表体更新　＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-
 	--取出表体需要加载士啤的行数
 	select @rowcount =count(*) from PO_Podetails
 	where poid=@poid
@@ -80,7 +62,6 @@ begin
 	declare @ifatherID int
 	declare @iChildID int
 	exec sp_getID N'00',N'001',N'Pomain',@rowcount,@ifatherID output,@iChildID output
-
 
 	declare @bodyID bigint
 	declare @invCode varchar(30)
@@ -129,16 +110,8 @@ begin
 				cbg_calibercode6,cbg_calibername6,csocode,irowno,cxjspdids,cbmemo,planlotnumber,1,'||pupo|'+@PoNO+'|'+ cast( @MaxRowNum+@irowx as varchar)
 			from 	PO_PODetails where id=@bodyID
 
-		 --Values(1000054570,N'PO16060155',N'601_000004',480,0,NULL,1,480,0,480,NULL,1,480,0,480,NULL,'2016-08-03',
-		 --NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1009500624,NULL,NULL,NULL,NULL,NULL,NULL,
-		 --NULL,NULL,NULL,0,1000021150,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-		 --0,N'mrp',NULL,NULL,NULL,NULL,5,N'J160402690',NULL,N'GEN018176680',15.485,NULL,NULL,NULL,NULL,NULL,
-		 --0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-		 --NULL,NULL,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,N'J160402690',
-		 --NULL,NULL,NULL,NULL,NULL,0)
 
 		-- 插入扩展表
-
 		 Insert Into PO_PODetails_ExtraDefine(id,cbdefine3,cbdefine4,cbdefine1,cbdefine2,cbdefine9,cbdefine11,
 			  cbdefine12,cbdefine15,cbdefine18,cbdefine19,cbdefine20,cbdefine21,cbdefine23,
 			  cbdefine24,cbdefine25,cbdefine29,cbdefine32,cbdefine35,cbdefine39)
@@ -149,8 +122,6 @@ begin
 		 from PO_PODetails_ExtraDefine
 		 where id=@bodyID
 
-		--Values (1000054570,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-		--NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)
 		set @irowx=@irowx+1
 
 		fetch next from my_cursor into @bodyID, @invCode,@iQuantity,@iRate
