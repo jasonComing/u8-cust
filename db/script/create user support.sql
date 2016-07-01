@@ -31,6 +31,20 @@ GRANT insert, update, delete, select ON Schema::dbo TO support;
 grant BACKUP DATABASE, BACKUP LOG, CREATE DEFAULT, CREATE FUNCTION, CREATE PROCEDURE, CREATE RULE, CREATE TABLE, CREATE VIEW to support
 GO
 
+use msdb
+create user support for login support;
+sp_addrolemember 'SQLAgentUserRole', 'support';
+sp_addrolemember 'SQLAgentReaderRole', 'support';
+sp_addrolemember 'SQLAgentOperatorRole', 'support';
+go
+
+use UFSystem
+create user support for login support;
+GRANT insert, update, delete, select ON Schema::dbo TO support;
+go
+
+
+
 exec sp_defaultdb 'support ', 'UFDATA_004_2015'
 
 go
