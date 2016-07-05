@@ -50,9 +50,10 @@ begin
 	--====以下为表体更新　＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	--更新单价/金额
 	update pp
-	set iUnitPrice =isnull(dbo.fun_GetPrice(pp.cInvCode),0),
-		 iMoney=isnull(dbo.fun_GetPrice(pp.cInvCode),0) * iQuantity
+	set iUnitPrice =vv.MinPrice,
+		 iMoney= vv.MinPrice * pp.iQuantity
 	from  PO_Podetails  pp
+	join V_InvCodePriceList  vv on pp.cInvCode=vv.cInvCode
 	where poid=@poid
 	--and pp.iUnitPrice <>0
 	and bgift=0
