@@ -48,6 +48,15 @@ begin
 
 
 	--====以下为表体更新　＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	--更新单价/金额
+	update pp
+	set iUnitPrice =isnull(dbo.fun_GetPrice(pp.cInvCode),0),
+		 iMoney=isnull(dbo.fun_GetPrice(pp.cInvCode),0) * iQuantity
+	from  PO_Podetails  pp
+	where poid=@poid
+	--and pp.iUnitPrice <>0
+	and bgift=0
+
 	--取出表体需要加载士啤的行数
 	select @rowcount =count(*) from PO_Podetails
 	where poid=@poid
