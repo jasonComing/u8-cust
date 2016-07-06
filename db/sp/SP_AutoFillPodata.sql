@@ -85,6 +85,7 @@ begin
 			select PO_Podetails.ID,PO_Podetails.cInvCode,PO_Podetails.iQuantity,isnull(Inventory.cInvDefine13,0.0) as iRate from PO_Podetails
 			left join Inventory  on PO_Podetails.cinvCode=Inventory.cinvCode
 			where poid=@poid
+			and (PO_Podetails.cinvCode not like '604%' and  PO_Podetails.cinvCode not like '8%')
 			and bgift=0
 			order by PO_Podetails.ivouchrowno
 
