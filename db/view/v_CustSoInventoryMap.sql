@@ -12,5 +12,6 @@ AS
 	and c.csocode not like '%/%'
 	and c.csocode not like '%\%'
 	and c.csocode not like '%-%'
+	and c.cSTCode != '03'
 
 GO
