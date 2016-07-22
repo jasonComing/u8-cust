@@ -5,6 +5,9 @@ create procedure CustCloseSoRow
 as
 begin
 
+declare @SoMainId int
+set @SoMainId = (select Id from SO_SODetails where isosid = @isosid)
+
 begin transaction
 begin try
 
@@ -26,6 +29,17 @@ begin try
 	from SO_SOMain 
 	Inner join SO_SODetails on SO_SOMain.id=so_Sodetails.id  
 	Where isosid=@isosid
+
+	Update SO_SOMain
+	set cCloser	= (select cUser_Name from ufsystem..UA_User where cUser_Id = @cUser_Id),
+		dclosedate = getdate(),
+		dclosesystime = convert(date, getdate())
+	where id = @SoMainId
+	-- only do the update if all detail rows are closed
+	and not exists (select 1
+		from SO_SODetails
+		where Id = @SoMainId
+		and cSCloser is null)
 
 	Update dispatchlists 
 	Set bmpforderclosed=1 
