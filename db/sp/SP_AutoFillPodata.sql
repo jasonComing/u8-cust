@@ -1,4 +1,4 @@
-alter proc SP_AutoFillPodata
+CREATE proc SP_AutoFillPodata
 /*
 功能：采购员批理生单时，自动补上表头相关必填项，
 		（部门、业务员、付款条件、质量等级-A，建档作废标记－否）
@@ -65,13 +65,13 @@ begin
 
 	select @MaxRowNum =max(ivouchrowno) from PO_Podetails where poid=@poid
 
-	if(@rowcount = 0 or @MaxRowNum =0)
-		return
+	--if(@rowcount = 0 or @MaxRowNum =0)
+	--	return
 
 	--取出等待要插入的表体ID号
 	declare @ifatherID int
 	declare @iChildID int
-	exec sp_getID N'00',N'001',N'Pomain',@rowcount,@ifatherID output,@iChildID output
+	exec sp_getID N'00',N'004',N'Pomain',@rowcount,@ifatherID output,@iChildID output
 
 	declare @bodyID bigint
 	declare @invCode varchar(30)
@@ -112,7 +112,7 @@ begin
 				cdefine24,cdefine25,cdefine26,cdefine27,iflag,citemcode,citem_class,ppcids,citemname,cfree3,cfree4,cfree5,
 				cfree6,cfree7,cfree8,cfree9,cfree10,bgsp,poid,cunitid,0,iappids,cdefine28,cdefine29,'false',
 				cdefine31,cdefine32,cdefine33,cdefine34,cdefine35,cdefine36,cdefine37,isosid,btaxcost,csource,cbcloser,ippartid,
-				ipquantity,iptoseq,sotype,sodid,contractrowguid,cupsocode,iinvmpcost,contractcode,contractrowno,fporefusequantity,
+				ipquantity,iptoseq,5,sodid,contractrowguid,cupsocode,iinvmpcost,contractcode,contractrowno,fporefusequantity,
 				fporefusenum,iorderdid,iordertype,csoordercode,iorderseq,cbclosetime,cbclosedate,cbg_itemcode,cbg_itemname,
 				cbg_caliberkey1,cbg_caliberkeyname1,cbg_caliberkey2,cbg_caliberkeyname2,cbg_caliberkey3,cbg_caliberkeyname3,
 				cbg_calibercode1,cbg_calibername1,cbg_calibercode2,cbg_calibername2,cbg_calibercode3,cbg_calibername3,ibg_ctrl,

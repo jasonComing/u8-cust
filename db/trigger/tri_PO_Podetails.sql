@@ -42,6 +42,12 @@ BEGIN
 	inner join v_CustSoInventoryMap s on s.cSOCode = d.csocode
 	inner join Inventory i on i.cInvCode = s.cInvCode
 	inner join Inserted bb on b.ID = bb.ID
+
+	 update b set b.SoType = 5
+	 from PO_Podetails b
+	 inner join Inserted bb on b.ID=bb.ID
+	 where b.csocode is not null
+	 and b.SoType != 5
 END
 
 GO
