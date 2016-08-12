@@ -40,7 +40,7 @@ BEGIN
 	 inner join Inserted bb on b.ID=bb.ID
 	 inner join PO_Podetails_extradefine P on bb.id =p.id
 	 where p.cbdefine3 is not null
-
+	 and b.csocode !=p.cbdefine3
 
 	--修正PO来源为跟JOB,以便入库可以自动预留
 	 update b set b.SoType = 5
