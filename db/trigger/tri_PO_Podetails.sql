@@ -1,16 +1,6 @@
-SET ANSI_NULLS ON
-GO
 
-SET QUOTED_IDENTIFIER ON
-GO
 
-IF EXISTS (select 1 from sys.objects where object_id = object_id(N'[dbo].[tri_PO_Podetails]') and type = 'TR')
-BEGIN
-	DROP TRIGGER dbo.tri_PO_Podetails
-END
-go
-
-CREATE TRIGGER [dbo].[tri_PO_Podetails]
+alter TRIGGER [dbo].[tri_PO_Podetails]
    ON  [dbo].[PO_Podetails]
    AFTER INSERT,UPDATE
 AS 
@@ -43,11 +33,22 @@ BEGIN
 	inner join Inventory i on i.cInvCode = s.cInvCode
 	inner join Inserted bb on b.ID = bb.ID
 
+
+	--手动新增/修改PO行JOB号时,变更csocode为手动指定的JOB号
+	 update b set b.csocode =p.cbdefine3,b.SoType=5
+	 from PO_Podetails b
+	 inner join Inserted bb on b.ID=bb.ID
+	 inner join PO_Podetails_extradefine P on bb.id =p.id
+	 where p.cbdefine3 is not null
+
+
+	--修正PO来源为跟JOB,以便入库可以自动预留
 	 update b set b.SoType = 5
 	 from PO_Podetails b
 	 inner join Inserted bb on b.ID=bb.ID
 	 where b.csocode is not null
 	 and b.SoType != 5
+
 END
 
 GO
