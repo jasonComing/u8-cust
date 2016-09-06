@@ -1,19 +1,34 @@
 CREATE  trigger tri_PoVersonAutoInsert
 /*
-¹¦ÄÜ£º×Ô¶¯²¹ÉÏ²É¹ºµ¥¾İ±íÉíÁÏ¼şµÄ¹æ¸ñ°æ±¾ºÅ,
-	¡¡°æ±¾ºÅÈ¡ĞÂ½¨²É¹ºµ¥¾İÊ±£¬ÏµÍ³ÒÑ¾­ÉóºËµÄ°æ±¾ºÅ£®		
-×÷Õß£ºJams
+åŠŸèƒ½ï¼šè‡ªåŠ¨è¡¥ä¸Šé‡‡è´­å•æ®è¡¨èº«æ–™ä»¶çš„è§„æ ¼ç‰ˆæœ¬å·,
+	ã€€ç‰ˆæœ¬å·å–æ–°å»ºé‡‡è´­å•æ®æ—¶ï¼Œç³»ç»Ÿå·²ç»å®¡æ ¸çš„ç‰ˆæœ¬å·ï¼
+ä½œè€…ï¼šJams
 */
-on PO_Podetails_ExtraDefine
+on PO_Podetails_extradefine
 	for insert
 as
 begin
 	update e  
-	set cbdefine29 = c.Version
+	set cbdefine29 = isnull(c.Version,'')
 	from PO_Podetails_ExtraDefine e
 	inner join inserted i on e.ID = i.ID
 	inner join PO_Podetails s on e.id = s.id
 	inner join CustInvSpec c on s.cInvCode = c.cInvCode
 	where c.Status = 1 and
 	(e.cbdefine29 is null OR e.cbdefine29 = '')
+
+	--é›»éPOæ™‚ï¼Œä»¥é—œé€£æ–™è™Ÿçš„ç‰ˆæœ¬è™Ÿä¾†æ›´æ–°
+	update e
+	set cbdefine29 = isnull(c.Version,'')
+	from PO_Podetails_ExtraDefine e
+	inner join inserted i on e.ID = i.ID
+	inner join PO_Podetails s on e.id = s.id
+	left join  PO_Pomain  pm  on pm.POID=s.POID
+	inner join CustInvSpec c on e.cbdefine39 = c.cInvCode
+	where pm.cPTCode=99 and
+	e.cbdefine39 is not null and
+	c.Status = 1 and
+	(e.cbdefine29 is null OR e.cbdefine29 = '')
+
 end
+GO
