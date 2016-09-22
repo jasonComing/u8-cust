@@ -57,6 +57,5 @@ BEGIN
 	inner join inserted t3 on t1.ID=t3.ID
 	inner join computationUnit t5 on t1.cUnitID =t5.cComunitCode
 	where t1.iNum >0  and t1.cDefine27 is not null
-	--and (t1.cInvCode like '640%' or t1.cInvCode like '8%')
 
 END
