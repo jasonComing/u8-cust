@@ -48,15 +48,14 @@ BEGIN
 	 and b.SoType != 5
 
 
-	 --以件數，件數單價出PO時，變更表體原幣單價，數量，金額
+	--以件數，件數單價出PO時，變更表體原幣單價，數量，金額
 	update t1
 	set  iQuantity=t3.iNum * t5.iChangRate,
-		  iUnitPrice =(t3.iNum * t3.cDefine27)/(t3.iNum * t5.iChangRate),
+		  iUnitPrice =t3.cDefine27 / t5.iChangRate,
 		  iMoney =t3.iNum * t3.cDefine27
 	from PO_Podetails  t1
 	inner join inserted t3 on t1.ID=t3.ID
-	inner join Inventory t4 on t1.cInvCode=t4.cInvCode
-	inner join computationUnit t5 on t4.cPUComUnitCode =t5.cComunitCode
+	inner join computationUnit t5 on t1.cUnitID =t5.cComunitCode
 	where t1.iNum >0  and t1.cDefine27 is not null
 	--and (t1.cInvCode like '640%' or t1.cInvCode like '8%')
 
