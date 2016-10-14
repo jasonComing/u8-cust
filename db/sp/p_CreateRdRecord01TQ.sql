@@ -1,5 +1,3 @@
-PO15107598	605_000141	270	269	1	WPI15113777
-WPI15100209
 
 -- 1. Find all rdrecords01 that has testing quantities
 -- Get into the warehouse  (No_TQ)
@@ -54,7 +52,7 @@ fetch next from db_cursor into @id, @rowcount
 
 while @@FETCH_STATUS = 0 
 begin
-	exec sp_GetId '','004','rd',@rowcount,@p5 output,@p6 output,default
+	exec sp_GetId '','001','rd',@rowcount,@p5 output,@p6 output,default
 	
 	if (@debug > 0)
 	begin
@@ -63,7 +61,7 @@ begin
 	
 	-- now insert into rdrecord01
 	insert into #main
-	select @p5 as id, brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,cCode + '_TQ' as cCode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,'system',cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,getdate(),null, null,bredvouch,bcredit,iprintcount
+	select @p5 as id, brdflag,cvouchtype,cbustype,csource,'05',ddate,cCode + '_TQ' as cCode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,'system',cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,getdate(),null, null,bredvouch,bcredit,iprintcount
 	from rdrecord01
 	where id = @id
 	
@@ -111,7 +109,7 @@ end
 
 insert into rdrecord01(id,brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,ccode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount,
 iverifystate ,cHandler, dVeriDate)
-select *, 0, 'system', convert(char(10), getdate(), 121)
+select *, 0, null, convert(char(10), getdate(), 121)
 from #main
 
 Insert Into rdrecord01_ExtraDefine(id)
