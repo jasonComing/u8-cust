@@ -1,5 +1,3 @@
-
-
 alter TRIGGER [dbo].[tri_PO_Podetails]
    ON  [dbo].[PO_Podetails]
    AFTER INSERT,UPDATE
@@ -49,8 +47,15 @@ BEGIN
 	 where b.csocode is not null
 	 and b.SoType != 5
 
+
+	--以件數，件數單價出PO時，變更表體原幣單價，數量，金額
+	update t1
+	set  iQuantity=t3.iNum * t5.iChangRate,
+		  iUnitPrice =t3.cDefine27 / t5.iChangRate,
+		  iMoney =t3.iNum * t3.cDefine27
+	from PO_Podetails  t1
+	inner join inserted t3 on t1.ID=t3.ID
+	inner join computationUnit t5 on t1.cUnitID =t5.cComunitCode
+	where t1.iNum >0  and t1.cDefine27 is not null
+
 END
-
-GO
-
-
