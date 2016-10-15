@@ -1,4 +1,4 @@
-alter  PROCEDURE [dbo].[SP_PmcReport]
+﻿alter  PROCEDURE [dbo].[SP_PmcReport]
 	 @Begindate  datetime =null ,
 	 @Enddate   datetime =null
 	  /*
@@ -89,7 +89,7 @@ BEGIN
 	order by h.InvCode,tb.sortNum
 
  --将订单记录表与BOM表，合并为一个表显示(只取机芯,并初始跟踪PO号:P0xxxxxxxxxxxx)
-	select  a1.*,b2.ParentInvCode,b2.ChildInvCode,b2.ChildName,b2.sortNum,  'P0xxxxxxxxxxxx' as PoNUM
+	select  a1.*,b2.ParentInvCode,b2.ChildInvCode,b2.ChildName,b2.sortNum,  'P0xxxxxxxxxxxx' as PoNUM, left(ChildInvCode, 3) as ChildInvCCode
 	into #tbPMCmainSubAndBom
 	from #tbPMCmainSub a1 
 	inner join #tb_bom b2 on a1.InvCode=b2.ParentInvCode
@@ -155,8 +155,8 @@ BEGIN
 	--清空並填充job號與相關料號關連表,等同于BOM表
 	truncate table #tbPMCmainSubAndBom
 
-	insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
-	select OrderNum,	InvCode,OrderQuantity,'',cinvcode,cinvName,sortNum,#tbJobInvcode.PoNUM
+	insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM,ChildInvCCode)
+	select OrderNum,	InvCode,OrderQuantity,'',cinvcode,cinvName,sortNum,#tbJobInvcode.PoNUM,left(cinvcode, 3) as ChildInvCCode
 	from #tbPMCmainSub
 	right join #tbJobInvcode on  #tbPMCmainSub.OrderNum=#tbJobInvcode.jobNum
 	order by #tbPMCmainSub.OrderNum,#tbJobInvcode.sortNum
@@ -211,7 +211,6 @@ BEGIN
 	
   --select '生产订单', * from #tbRDsub
 
- 
 	--产成品入库信息
 	select a7.cmocode,a7.cinvCode,a7.iquantity,b7.cCode
 	into #rdrecordin
@@ -245,6 +244,8 @@ BEGIN
   
  --创建结果表
 
+	create index idx_tbPMCmainSubandBom on #tbPMCmainSubAndBom(OrderNum, InvCode)
+
 	 CREATE TABLE #tbResult(
 		 ID [int] IDENTITY(1,1) NOT NULL,
 		 RowType [varchar](10) NULL,
@@ -254,7 +255,7 @@ BEGIN
 		 CountryCode [nvarchar](30) NULL,
 		 ShipWhere [nvarchar](30) NULL,
 		 SapNO [nvarchar](30) NULL,
-		 KePoNum [nvarchar](30) NULL,
+		 KePoNum [nvarchar](120) NULL,
 		 Custumer [nvarchar](60) NULL,
 		 SaleType [nvarchar](20) NULL,
 		 TeamName [nvarchar](30) NULL,
@@ -313,7 +314,6 @@ BEGIN
 		'',''
 		from #tbPMCmain
 
-				
  ---插入JOB各行汇总表,JOB+料号分组统计,
 	 declare @orderdate date ,@custumer nvarchar(100)
 	 declare @jobNum varchar(20),@invCode varchar(30),@iROWnum int
@@ -347,38 +347,38 @@ BEGIN
 				begin
 
 					if not EXISTS(select * from #tbPMCmainSubAndBom
-								where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='601' or left(ChildInvCode,3)='607' ))
+								where OrderNum=@jobNum and  InvCode=@invCode  and ( ChildInvCCode='601' or ChildInvCCode='607' ))
 					insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
 					values(@jobNum,@invCode,@QuantitySum,'2-壳','-','',2,'')
 
 					if not EXISTS(select * from #tbPMCmainSubAndBom
-								where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='605') )
+								where OrderNum=@jobNum and  InvCode=@invCode  and ( ChildInvCCode='605') )
 					insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
 					values(@jobNum,@invCode,@QuantitySum,'3-面','-','',3,'')
 
 					if not EXISTS(select * from #tbPMCmainSubAndBom
-								where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='603') )
+								where OrderNum=@jobNum and  InvCode=@invCode  and ( ChildInvCCode='603') )
 					insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
 					values(@jobNum,@invCode,@QuantitySum,'4-针','-','',4,'')
 
 					if not EXISTS(select * from #tbPMCmainSubAndBom
-								where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='617') )
+								where OrderNum=@jobNum and  InvCode=@invCode  and ( ChildInvCCode='617') )
 					insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
 					values(@jobNum,@invCode,@QuantitySum,'5-巴的','-','',5,'')
 
 					if not EXISTS(select * from #tbPMCmainSubAndBom
-								where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='602' or left(ChildInvCode,3)='619' 
-								or left(ChildInvCode,3)='622' or left(ChildInvCode,3)='658' or left(ChildInvCode,3)='621' or left(ChildInvCode,3)='623') )
+								where OrderNum=@jobNum and  InvCode=@invCode  and ( ChildInvCCode='602' or ChildInvCCode='619' 
+								or ChildInvCCode='622' or ChildInvCCode='658' or ChildInvCCode='621' or ChildInvCCode='623') )
 					insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
 					values(@jobNum,@invCode,@QuantitySum,'6-帶','-','',6,'')
 
 					if not EXISTS(select * from #tbPMCmainSubAndBom
-								where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='606'  or left(ChildInvCode,3)='620' ) )
+								where OrderNum=@jobNum and  InvCode=@invCode  and ( ChildInvCCode='606'  or ChildInvCCode='620' ) )
 					insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
 					values(@jobNum,@invCode,@QuantitySum,'7-扣','-','',7,'')
 
 					if not EXISTS(select * from #tbPMCmainSubAndBom
-								where OrderNum=@jobNum and  InvCode=@invCode  and ( left(ChildInvCode,3)='609') )
+								where OrderNum=@jobNum and  InvCode=@invCode  and ( ChildInvCCode='609') )
 
 					insert into #tbPMCmainSubAndBom(OrderNum,InvCode,OrderQuantity,ParentInvCode,ChildInvCode,ChildName,sortNum,PoNUM)
 					values(@jobNum,@invCode,@QuantitySum,'8-底蓋','-','',8,'')
