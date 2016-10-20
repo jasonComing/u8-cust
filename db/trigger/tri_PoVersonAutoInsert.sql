@@ -27,8 +27,8 @@ begin
 	inner join CustInvSpec c on e.cbdefine39 = c.cInvCode
 	where pm.cPTCode=99 and
 	e.cbdefine39 is not null and
-	c.Status = 1 and
-	(e.cbdefine29 is null OR e.cbdefine29 = '')
+	c.Status = 1 
+	--and (e.cbdefine29 is null OR e.cbdefine29 = '')
 
 end
 GO
