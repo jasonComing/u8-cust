@@ -14,6 +14,8 @@ declare @p6 int
 declare @id int
 declare @autoid int
 declare @rowcount int
+declare @mainId int
+declare @mainCode varchar(50)
 
 -- temp table
 select m.id, d.Autoid
@@ -109,7 +111,7 @@ end
 
 insert into rdrecord01(id,brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,ccode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount,
 iverifystate ,cHandler, dVeriDate)
-select *, 0, null, convert(char(10), getdate(), 121)
+select *, 0, null, null
 from #main
 
 Insert Into rdrecord01_ExtraDefine(id)
@@ -183,7 +185,7 @@ end
 	 update b
 	 set b.cbvencode =
 		case 
-			when isnull(b.cvmivencode,'') &lt;&gt; '' then b.cvmivencode 
+			when isnull(b.cvmivencode,'') <> '' then b.cvmivencode 
 			else case 
 				when  isnull(a.cvencode,'') = '' then isnull(b.cbvencode,'') 
 				else  isnull(a.cvencode,'')  
@@ -224,5 +226,7 @@ end
 	
  close main_cursor
  deallocate main_cursor
+
+ exec SP_ApproveWPI_TQ
 
  END
