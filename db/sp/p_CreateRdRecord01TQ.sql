@@ -211,8 +211,8 @@ end
 	 and not exists (
 		select 1
 		from SCM_Item Item
-		where Item.cInvCode=a.cInvCode and Item.cfree1=a.cfree1 
-	 and Item.cfree2=a.cfree2 and Item.cfree3=a.cfree3 and Item.cfree4=a.cfree4 and Item.cfree5=a.cfree5 
+		where Item.cInvCode=a.cInvCode and Item.cfree1=a.cfree1
+	 and Item.cfree2=a.cfree2 and Item.cfree3=a.cfree3 and Item.cfree4=a.cfree4 and Item.cfree5=a.cfree5
 	 and Item.cfree6=a.cfree6 and Item.cfree7=a.cfree7 and Item.cfree8=a.cfree8 and Item.cfree9=a.cfree9 and Item.cfree10=a.cfree10)
 
 	exec Usp_SCM_CommitGeneralLedgerWithCheck N'ST',1,1,0,1,0,1,1,0,1,0,1,0,0 ,0,@transactionId
