@@ -60,7 +60,7 @@ begin
 	into  #LPWriteBackSumTbl
 	from #LPWriteBackTbl
 	group by cinvcode,isotype,isodid,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10
-	
+
 	create index index_lpwritebacksumtbl
 	on #LPWriteBackSumTbl(cinvcode,isotype,isodid,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10)
 
@@ -102,7 +102,7 @@ begin
 	begin
 		select 'SCM_entryledgerbuffer',* from SCM_entryledgerbuffer
 	end
-	
+
 	--取SPID號
 	set @spid='spid_'+ cast(@@spid as varchar)
 	select 'spid: ' + @spid
@@ -127,4 +127,3 @@ begin
 	exec Usp_SCM_CommitGeneralLedgerWithCheck N'ST',1,1,0,1,0,1,1,0,1,0,1,0,0 ,0,@spid
 
 end
-

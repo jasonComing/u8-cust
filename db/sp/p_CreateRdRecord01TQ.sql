@@ -179,18 +179,18 @@ end
  open main_cursor
  fetch next from main_cursor into @mainId, @mainCode
 
- while @@FETCH_STATUS = 0 
+ while @@FETCH_STATUS = 0
  begin
 
 	 update b
 	 set b.cbvencode =
-		case 
-			when isnull(b.cvmivencode,'') <> '' then b.cvmivencode 
-			else case 
-				when  isnull(a.cvencode,'') = '' then isnull(b.cbvencode,'') 
-				else  isnull(a.cvencode,'')  
+		case
+			when isnull(b.cvmivencode,'') <> '' then b.cvmivencode
+			else case
+				when  isnull(a.cvencode,'') = '' then isnull(b.cbvencode,'')
+				else  isnull(a.cvencode,'')
 			end
-		end   
+		end
 	 from rdrecord01 a  with (nolock)
 	 inner join rdrecords01 b   on a.id =b.id
 	 inner join inventory i with (nolock) on b.cinvcode=i.cinvcode
@@ -201,12 +201,12 @@ end
 
 	 exec ST_SaveForStock N'01',@mainId,1,0 ,1
 	 exec ST_SaveForTrackStock N'01',@mainId, 0 ,1
- 
-	select @@spid
- 
+
+	 select @@spid
+
 	 insert into SCM_Item(cInvCode,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10)
 	 select distinct cInvCode,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10
-	 from SCM_EntryLedgerBuffer a with (nolock) 
+	 from SCM_EntryLedgerBuffer a with (nolock)
 	 where a.transactionid=@transactionId
 	 and not exists (
 		select 1
@@ -216,14 +216,14 @@ end
 	 and Item.cfree6=a.cfree6 and Item.cfree7=a.cfree7 and Item.cfree8=a.cfree8 and Item.cfree9=a.cfree9 and Item.cfree10=a.cfree10)
 
 	exec Usp_SCM_CommitGeneralLedgerWithCheck N'ST',1,1,0,1,0,1,1,0,1,0,1,0,0 ,0,@transactionId
- 
+
 	Update mainbatch Set ccode = @mainCode Where rdmId = @mainId and cvouchtype =N'01'
- 
+
 	exec IA_SP_WriteUnAccountVouchForST @mainId,N'01'
 
 	fetch next from main_cursor into @mainId, @mainCode
  end
-	
+
  close main_cursor
  deallocate main_cursor
 
