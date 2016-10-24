@@ -1,5 +1,3 @@
-PO15107598	605_000141	270	269	1	WPI15113777
-WPI15100209
 
 -- 1. Find all rdrecords01 that has testing quantities
 -- Get into the warehouse  (No_TQ)
@@ -16,6 +14,8 @@ declare @p6 int
 declare @id int
 declare @autoid int
 declare @rowcount int
+declare @mainId int
+declare @mainCode varchar(50)
 
 -- temp table
 select m.id, d.Autoid
@@ -54,7 +54,7 @@ fetch next from db_cursor into @id, @rowcount
 
 while @@FETCH_STATUS = 0 
 begin
-	exec sp_GetId '','004','rd',@rowcount,@p5 output,@p6 output,default
+	exec sp_GetId '','001','rd',@rowcount,@p5 output,@p6 output,default
 	
 	if (@debug > 0)
 	begin
@@ -63,7 +63,7 @@ begin
 	
 	-- now insert into rdrecord01
 	insert into #main
-	select @p5 as id, brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,cCode + '_TQ' as cCode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,'system',cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,getdate(),null, null,bredvouch,bcredit,iprintcount
+	select @p5 as id, brdflag,cvouchtype,cbustype,csource,'05',ddate,cCode + '_TQ' as cCode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,'system',cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,getdate(),null, null,bredvouch,bcredit,iprintcount
 	from rdrecord01
 	where id = @id
 	
@@ -111,7 +111,7 @@ end
 
 insert into rdrecord01(id,brdflag,cvouchtype,cbustype,csource,cwhcode,ddate,ccode,crdcode,cdepcode,cpersoncode,cptcode,cvencode,cordercode,carvcode,cmemo,cmaker,cdefine1,cdefine2,cdefine10,bpufirst,darvdate,vt_id,bisstqc,ipurarriveid,itaxrate,iexchrate,cexch_name,bomfirst,idiscounttaxtype,iswfcontrolled,dnmaketime,dnmodifytime,dnverifytime,bredvouch,bcredit,iprintcount,
 iverifystate ,cHandler, dVeriDate)
-select *, 0, 'system', convert(char(10), getdate(), 121)
+select *, 0, null, null
 from #main
 
 Insert Into rdrecord01_ExtraDefine(id)
@@ -169,4 +169,64 @@ end
 	inner join  #Ufida_WBBuffers_PurchaseIn_Target AS T2 ON T2.idID=pu_arrivalvouchs.autoID 
 	where isnull(iposid,0)<>0 group by iposid ) T2 on T2.iposid=t1.id
 
-END
+ declare @transactionId varchar(20)
+ set @transactionId = 'spid_' + convert(varchar(20), @@spid)
+-- loop
+ declare main_cursor cursor for
+	select id, cCode
+	from #main
+
+ open main_cursor
+ fetch next from main_cursor into @mainId, @mainCode
+
+ while @@FETCH_STATUS = 0
+ begin
+
+	 update b
+	 set b.cbvencode =
+		case
+			when isnull(b.cvmivencode,'') <> '' then b.cvmivencode
+			else case
+				when  isnull(a.cvencode,'') = '' then isnull(b.cbvencode,'')
+				else  isnull(a.cvencode,'')
+			end
+		end
+	 from rdrecord01 a  with (nolock)
+	 inner join rdrecords01 b   on a.id =b.id
+	 inner join inventory i with (nolock) on b.cinvcode=i.cinvcode
+	 where a.id = @mainId
+	 and i.btrack =1
+	 and isnull(b.cvouchcode,0)=0
+	 and isnull(a.cbustype,'') not in (N'调拨入库',N'调拨出库')
+
+	 exec ST_SaveForStock N'01',@mainId,1,0 ,1
+	 exec ST_SaveForTrackStock N'01',@mainId, 0 ,1
+
+	 select @@spid
+
+	 insert into SCM_Item(cInvCode,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10)
+	 select distinct cInvCode,cfree1,cfree2,cfree3,cfree4,cfree5,cfree6,cfree7,cfree8,cfree9,cfree10
+	 from SCM_EntryLedgerBuffer a with (nolock)
+	 where a.transactionid=@transactionId
+	 and not exists (
+		select 1
+		from SCM_Item Item
+		where Item.cInvCode=a.cInvCode and Item.cfree1=a.cfree1
+	 and Item.cfree2=a.cfree2 and Item.cfree3=a.cfree3 and Item.cfree4=a.cfree4 and Item.cfree5=a.cfree5
+	 and Item.cfree6=a.cfree6 and Item.cfree7=a.cfree7 and Item.cfree8=a.cfree8 and Item.cfree9=a.cfree9 and Item.cfree10=a.cfree10)
+
+	exec Usp_SCM_CommitGeneralLedgerWithCheck N'ST',1,1,0,1,0,1,1,0,1,0,1,0,0 ,0,@transactionId
+
+	Update mainbatch Set ccode = @mainCode Where rdmId = @mainId and cvouchtype =N'01'
+
+	exec IA_SP_WriteUnAccountVouchForST @mainId,N'01'
+
+	fetch next from main_cursor into @mainId, @mainCode
+ end
+
+ close main_cursor
+ deallocate main_cursor
+
+ exec SP_ApproveWPI_TQ
+
+ END
