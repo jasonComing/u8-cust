@@ -67,7 +67,7 @@ BEGIN
 		inner join PO_Podetails_extradefine pex on p2.id = pex.ID
 		inner join inserted i on i.ID = pex.ID
 		where (p2.csocode is null and pex.cBDefine3 is not null)
-		or (p2.csocode is not null  and pex.cBDefine3 is not null and p2.csocode <> pex.cBDefine3)
+		or (p2.csocode is not null and pex.cBDefine3 is not null and p2.csocode <> pex.cBDefine3)
 
 		update pe
 		set pe.cbdefine3 = i.csocode
