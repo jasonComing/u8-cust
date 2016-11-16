@@ -58,4 +58,23 @@ BEGIN
 	inner join computationUnit t5 on t1.cUnitID =t5.cComunitCode
 	where t1.iNum >0  and t1.cDefine27 is not null
 
+	--变更PO时,同步csocode与cBDefine3,以便开采购发票时,带出JOB号
+	IF EXISTS(SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM deleted)
+	begin
+		update p2
+		set p2.csocode = pex.cBDefine3
+		from PO_Podetails  p2
+		inner join  PO_Podetails_extradefine pex on p2.id = pex.ID
+		inner join  inserted i on i.ID = pex.ID
+		where (p2.csocode is null and pex.cBDefine3 is not null)
+		or (p2.csocode is not null  and pex.cBDefine3 is not null and p2.csocode <> pex.cBDefine3)
+
+		update pe
+		set pe.cbdefine3 = i.csocode
+		from PO_Podetails_extradefine pe
+		inner join Inserted i on pe.ID = i.ID
+		where i.csocode is not null
+		and pe.cbdefine3 is null
+	end
+
 END
