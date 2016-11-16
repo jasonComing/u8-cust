@@ -63,7 +63,7 @@ BEGIN
 	begin
 		update p2
 		set p2.csocode = pex.cBDefine3
-		from PO_Podetails  p2
+		from PO_Podetails p2
 		inner join PO_Podetails_extradefine pex on p2.id = pex.ID
 		inner join inserted i on i.ID = pex.ID
 		where (p2.csocode is null and pex.cBDefine3 is not null)
