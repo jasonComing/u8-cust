@@ -11,7 +11,7 @@ begin
 
 	update pe set cbdefine3 = temp.csocode
 	from PurBillVouchs_extradefine pe
-	left join (
+	inner join (
 		select i.cbdefine3,po.csocode,p.ID
 		from inserted i
 		left join PurBillVouchs p on i.id = p.id
