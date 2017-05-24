@@ -9,9 +9,11 @@ BEGIN
 	update b set b.cDefine29=e.cInvDefine1,b.cDefine33=f.cidefine9
 	from PO_Podetails b
 	inner join Inserted bb on b.ID=bb.ID
+	inner join PO_POMain pm on pm.poid = b.poid
 	inner join v_CustSoInventoryMap m on b.cSOCode = m.cSOCode
 	inner join Inventory e on m.cInvCode=e.cInvCode
 	left join Inventory_extradefine f on e.cInvCode=f.cInvCode
+	where pm.cPTCode != '02'
 	
 	-- 客號, 款號 (散件)
 	update b set b.cDefine29=e.cInvDefine1,b.cDefine33=f.cidefine9
