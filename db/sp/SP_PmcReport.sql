@@ -28,7 +28,7 @@ BEGIN
 	convert(varchar(10),b.dPreDate,23) as 'ShipDate',e.cbdefine33 as 'CountryCode',b.cDefine22 as 'ShipWhere',b.cDefine23 as 'SapNO',
 	b.cDefine25 as 'KePoNum',c.cCusAbbName as 'Custumer',d.cSTname as 'SaleType',f.chdefine9 as 'TeamName',
 	f.chdefine26 as'SoType',b.csocode as 'OrderNum',b.iRowNo as 'RowNo', b.cinvCode as 'InvCode',
-	h.cInvDefine1 as 'SkuNO',g.cidefine9 as 'Modle',h.cInvDefine9 as 'MoveMent',e.cbdefine1 as 'DiZi',
+	h.cInvDefine1 as 'SkuNO',b.cDefine24 as 'PoLineNo',g.cidefine9 as 'Modle',h.cInvDefine9 as 'MoveMent',e.cbdefine1 as 'DiZi',
 	b.cDefine32 as 'ShipWay',e.cbdefine30 as 'OrderQuantity',b.iKPQuantity  as 'KPQuantity'
 	into #tbPMCmain
 	from SO_SOMain a  left join SO_SODetails b on a.csoCode=b.csoCode
@@ -264,6 +264,7 @@ BEGIN
 		 RowNo [int] NULL,
 		 InvCode [nvarchar](30) NULL,
 		 SkuNO [nvarchar](30) NULL,
+		 PoLineNo [nvarchar](60) NULL,
 		 Modle [nvarchar](20) NULL,
 		 MoveMent [nvarchar](200) NULL,
 		 DiZi [nvarchar](100) NULL,
@@ -300,7 +301,7 @@ BEGIN
 
 	----插入主表信息－销售订单表体行信息
 	insert into #tbResult(RowType,OrderDate,JobDate,ShipDate,CountryCode,ShipWhere,SapNO,KePoNum,Custumer,
-			SaleType,TeamName,SoType,OrderNum,RowNo,InvCode,SkuNO,Modle,MoveMent,DiZi,ShipWay,OrderQuantity,KPQuantity,
+			SaleType,TeamName,SoType,OrderNum,RowNo,InvCode,SkuNO,PoLineNo,Modle,MoveMent,DiZi,ShipWay,OrderQuantity,KPQuantity,
 			ParentInvCode,ChildInvCode,InvName,StockLock,StockFree,Venter,PoNum,PoQuantity,ArrQuantitySum,ArrReturSum,RdInStoreSum,RdUninSum,ArrDate,
 			MDorderDate,MDorderNum,MDordeQuantity,
 			Qcdate,Qcquantity,QCpassQuantity,QcreturnQuantity,FinishedGoodSum,
